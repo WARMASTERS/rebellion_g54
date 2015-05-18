@@ -1,0 +1,10 @@
+require 'rebellion_g54/action/income'
+require 'rebellion_g54/action/coup'
+
+require 'rebellion_g54/action/banker'
+require 'rebellion_g54/action/customs_officer'
+require 'rebellion_g54/action/director'
+require 'rebellion_g54/action/guerrilla'
+require 'rebellion_g54/action/lawyer'
+require 'rebellion_g54/action/peacekeeper'
+require 'rebellion_g54/action/politician'
