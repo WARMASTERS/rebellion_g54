@@ -366,6 +366,7 @@ module RebellionG54; class Game
     return if new_card == card
     # This will raise if player didn't have the old card
     player.replace_cards(@main_token, [card], [new_card])
+    @output_streams.each { |os| os.new_cards(player.user) }
   end
 
   def communications_add_card(player, card)
@@ -391,7 +392,10 @@ module RebellionG54; class Game
     }
 
     # Player#replace_cards will do the sanity check
-    player_deltas.each { |player, (lose, gain)| player.replace_cards(@main_token, lose, gain) }
+    player_deltas.each { |player, (lose, gain)|
+      player.replace_cards(@main_token, lose, gain)
+      @output_streams.each { |os| os.new_cards(player.user) }
+    }
 
     @deck.shuffle!
     @communications_assignments.clear
