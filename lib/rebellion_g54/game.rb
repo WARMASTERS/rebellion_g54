@@ -354,6 +354,7 @@ module RebellionG54; class Game
       @players.delete(player)
       @dead_players << player
       enqueue_on_death_decisions(player)
+      @output_streams.each { |os| os.player_died(player.user) }
     end
   end
 
