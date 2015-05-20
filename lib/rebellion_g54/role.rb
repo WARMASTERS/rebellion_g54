@@ -31,5 +31,6 @@ module RebellionG54; class Role
     reporter: [:communications, false].freeze,
     speculator: [:finance, true].freeze,
     spy: [:finance, false].freeze,
+    writer: [:communications, true].freeze,
   }.freeze
 end; end
