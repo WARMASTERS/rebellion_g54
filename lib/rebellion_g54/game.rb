@@ -437,6 +437,12 @@ module RebellionG54; class Game
           # You can't target a peaced player with anything unfriendly except for Coup
           return [false, "Can only target #{target} with Coup because of Peace Keeping"] if @peace_player == target && action_class != Action::Coup
         end
+        @players.each { |p|
+          return [false, "#{target} is not the richest player (#{p} is richer)"] if p.coins > target.coins
+        } if opts[:richest]
+        @players.each { |p|
+          return [false, "#{target} is not the poorest player (#{p} is poorer)"] if p.coins < target.coins
+        } if opts[:poorest]
         return [false, "Can't target the same player #{target} twice"] if parsed_args.include?(target)
         parsed_args << target
       when :role
