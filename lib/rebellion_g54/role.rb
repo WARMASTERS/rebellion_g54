@@ -16,6 +16,7 @@ module RebellionG54; class Role
     customs_officer: [:special_interests, true].freeze,
     director: [:communications, false].freeze,
     farmer: [:finance, false].freeze,
+    foreign_consular: [:special_interests, true].freeze,
     general: [:force, false].freeze,
     guerrilla: [:force, false].freeze,
     intellectual: [:special_interests, false].freeze,
