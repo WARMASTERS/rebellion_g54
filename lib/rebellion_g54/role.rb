@@ -24,6 +24,7 @@ module RebellionG54; class Role
     politician: [:special_interests, false].freeze,
     priest: [:special_interests, false].freeze,
     reporter: [:communications, false].freeze,
+    speculator: [:finance, true].freeze,
     spy: [:finance, false].freeze,
   }.freeze
 end; end
