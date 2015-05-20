@@ -535,6 +535,7 @@ module RebellionG54; class Game
       next_decision
     else
       output("#{claim.claimant} was lying! It was a #{card}, not a #{Role.to_s(claim.role)}! #{claim.claimant} can't #{claim.effect} this round.")
+      claim.action_class.found_lying(@action_token, claim.claimant, claim.challenger)
       claim.truthful = false
       if on_lose_influence
         claim.claimant.flip_side_card(@main_token, card)
@@ -550,6 +551,7 @@ module RebellionG54; class Game
 
   def cb_lose_challenge_and_react(claim, card, action_class)
     output("#{claim.claimant} was lying! #{claim.claimant} can't #{claim.effect} this round.")
+    claim.action_class.found_lying(@action_token, claim.claimant, claim.challenger)
     claim.truthful = false
     cb_react_to_lose_card(claim.claimant, card, action_class)
   end

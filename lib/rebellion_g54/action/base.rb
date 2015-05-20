@@ -82,6 +82,9 @@ module RebellionG54; module Action; class Base
     "#{self.class.flavor_name}#{requirement}: #{effect}"
   end
 
+  def self.found_lying(token, claimant, challenger)
+  end
+
   # At this point, challenges have resolved.
   # If this method is called, the active player was not challenged, or was truthful on a challenge.
   # All players in join_players have passed their challenges.
