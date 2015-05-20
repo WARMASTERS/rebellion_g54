@@ -323,6 +323,31 @@ module RebellionG54; class Game
     })
   end
 
+  def enqueue_communications_redraw_decision(token, player, cost)
+    raise 'Only Game or action resolvers should call this method' if token != @action_token
+    @upcoming_decisions.unshift(lambda {
+      cards = @communications_available.map(&:to_s).join(', ')
+      Decision.single_player_with_costs(
+        current_turn.id, player, 'Pay to draw another card?',
+        costs_and_choices: [
+          [cost, { 'draw' => Choice.new("Draw another card - you have #{player.coins} coins") {
+            # It never dies! It re-enqueues itself!!!
+            # May want to stop re-enqueueing if the deck runs out of cards...
+            player.take_coins(token, cost, strict: true)
+            communications_add_deck(token, 1)
+            enqueue_communications_redraw_decision(token, player, cost)
+            next_decision
+            [true, '']
+          }}],
+          [0, { 'pass' => Choice.new("Stop and pick from #{cards}") {
+            next_decision
+            [true, '']
+          }}]
+        ]
+      )
+    })
+  end
+
   def enqueue_communications_give_card_decision(token, giving_player, communicating_player)
     raise 'Only Game or action resolvers should call this method' if token != @action_token
     @upcoming_decisions.unshift(lambda {
