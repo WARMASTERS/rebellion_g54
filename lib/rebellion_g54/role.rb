@@ -10,6 +10,7 @@ module RebellionG54; class Role
   # Role => [group, advanced?]
   ALL = {
     banker: [:finance, false].freeze,
+    capitalist: [:finance, true].freeze,
     customs_officer: [:special_interests, true].freeze,
     director: [:communications, false].freeze,
     farmer: [:finance, false].freeze,
