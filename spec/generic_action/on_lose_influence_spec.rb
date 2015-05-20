@@ -33,6 +33,16 @@ RSpec.describe RebellionG54::Action::TestOnLoseInfluence do
     context 'when opponent sets right card' do
       before(:each) { game.take_choice(opponent, 'test_on_lose_influence1') }
 
+      it 'decreases opponent influence' do
+        expect(game.user_influence(opponent)).to be == 1
+      end
+
+      it 'has a side card for the opponent' do
+        player = game.find_player(opponent)
+        side_cards = player.each_side_card.map { |card, claim_role| [card.role, claim_role] }
+        expect(side_cards).to be == [[:test_on_lose_influence, :test_on_lose_influence]]
+      end
+
       it 'asks me for challenge decision' do
         expect(game.choice_names).to be == { user => ['challenge', 'pass'] }
       end
@@ -74,6 +84,16 @@ RSpec.describe RebellionG54::Action::TestOnLoseInfluence do
 
     context 'when opponent sets wrong card' do
       before(:each) { game.take_choice(opponent, 'test_on_lose_influence2') }
+
+      it 'decreases opponent influence' do
+        expect(game.user_influence(opponent)).to be == 1
+      end
+
+      it 'has a side card for the opponent' do
+        player = game.find_player(opponent)
+        side_cards = player.each_side_card.map { |card, claim_role| [card.role, claim_role] }
+        expect(side_cards).to be == [[:test_role, :test_on_lose_influence]]
+      end
 
       it 'asks me for challenge decision' do
         expect(game.choice_names).to be == { user => ['challenge', 'pass'] }
