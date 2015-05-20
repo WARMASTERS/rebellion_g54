@@ -22,6 +22,11 @@ RSpec.describe RebellionG54::Game do
         expect(game.size).to be == 2
       end
 
+      it 'has revealed cards for the player' do
+        player = game.find_dead_player(u3)
+        expect(player.each_revealed_card.map { |c| c }.size).to be == 2
+      end
+
       it 'does not declare the game over yet' do
         expect(game.winner).to be_nil
       end
