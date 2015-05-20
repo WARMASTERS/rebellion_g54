@@ -14,7 +14,9 @@ module RebellionG54; class Role
     director: [:communications, false].freeze,
     guerrilla: [:force, false].freeze,
     lawyer: [:special_interests, false].freeze,
+    newscaster: [:communications, false].freeze,
     peacekeeper: [:special_interests, false].freeze,
     politician: [:special_interests, false].freeze,
+    reporter: [:communications, false].freeze,
   }.freeze
 end; end
