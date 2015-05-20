@@ -33,3 +33,15 @@ def example_game(num_players, roles: nil, rigged_roles: nil, coins: nil)
 
   game
 end
+
+class StdoutStream
+  def player_died(player)
+    puts("#{player} died")
+  end
+  def new_cards(player)
+    puts("#{player} new cards")
+  end
+  def puts(msg)
+    $stdout.puts(msg)
+  end
+end
