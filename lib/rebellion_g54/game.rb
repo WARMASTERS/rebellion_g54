@@ -497,6 +497,7 @@ module RebellionG54; class Game
       next_decision
     else
       output("#{joiner} joins in #{turn.action.class.flavor_name}!")
+      turn.action.player_joined(joiner)
       generic_advance_phase
     end
     [true, '']
