@@ -15,6 +15,7 @@ module RebellionG54; class Role
     farmer: [:finance, false].freeze,
     general: [:force, false].freeze,
     guerrilla: [:force, false].freeze,
+    intellectual: [:special_interests, false].freeze,
     judge: [:force, false].freeze,
     lawyer: [:special_interests, false].freeze,
     newscaster: [:communications, false].freeze,
