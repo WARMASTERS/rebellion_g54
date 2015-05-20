@@ -316,12 +316,15 @@ module RebellionG54; class Game
     })
   end
 
-  def enqueue_lose_influence_decision(token, player)
+  def enqueue_lose_influence_decision(token, player, extort_cost: nil, extort_player: nil)
     raise 'Only Game or action resolvers should call this method' if token != @action_token
     @upcoming_decisions.unshift(lambda {
       choices = player.each_live_card.with_index.map { |card, i|
         [0, { "lose#{i + 1}" => Choice.new("Lose #{card}") { cb_lose_card(player, card) }}]
       }
+      choices << [extort_cost, {
+        'pay' => Choice.new("Pay #{extort_cost} to #{extort_player}") { cb_extorted(player, extort_player, extort_cost) }
+      }] if extort_cost && extort_player
       @actions.select { |a| a.timing == :on_lose_influence }.each { |action|
         cost = tax_for(action)
         player.each_live_card.with_index { |card, i|
@@ -574,6 +577,15 @@ module RebellionG54; class Game
 
   def cb_lose_card(player, card)
     player_loses_card(player, card)
+    generic_advance_phase
+    [true, '']
+  end
+
+  def cb_extorted(extorted_player, extorting_player, extort_cost)
+    output("#{extorted_player} gives in to extortion and pays #{extort_cost} coins to #{extorting_player}.")
+    extorted_player.take_coins(@action_token, extort_cost, strict: true)
+    # Remember, extorting player also gets a refund on the action cost.
+    extorting_player.give_coins(@action_token, extort_cost + current_turn.action.class.cost)
     generic_advance_phase
     [true, '']
   end
