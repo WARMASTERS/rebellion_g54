@@ -4,7 +4,9 @@ require 'rebellion_g54/game'
 
 RSpec.describe RebellionG54::Game do
   context 'in a three-player game' do
-    let(:game) { example_game(3, coins: 7, rigged_roles: :guerrilla) }
+    # Yes, we need to set two rigged roles despite not using the banker.
+    # Otherwise, it's not guaranteed that u2 gets a guerrilla, which I rely on.
+    let(:game) { example_game(3, coins: 7, rigged_roles: [:guerrilla, :banker]) }
     let(:users) { game.users }
     let!(:u1) { users[0] }
     let!(:u2) { users[1] }
