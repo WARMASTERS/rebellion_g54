@@ -50,6 +50,11 @@ RSpec.describe RebellionG54::Game do
         expect(game.size).to be == 2
       end
 
+      it 'kills the player' do
+        expect(game.find_player(u3)).to be_nil
+        expect(game.find_dead_player(u3)).to_not be_nil
+      end
+
       it 'does not declare the game over yet' do
         expect(game.winner).to be_nil
       end
