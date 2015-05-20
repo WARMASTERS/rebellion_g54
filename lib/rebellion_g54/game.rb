@@ -437,6 +437,7 @@ module RebellionG54; class Game
           # You can't target a peaced player with anything unfriendly except for Coup
           return [false, "Can only target #{target} with Coup because of Peace Keeping"] if @peace_player == target && action_class != Action::Coup
         end
+        return [false, "Can't target the same player #{target} twice"] if parsed_args.include?(target)
         parsed_args << target
       when :role
         # No to_sym (Well, I'm on Ruby 2.2 so I can garbage-collect symbols, but I don't want to rely on it?)
