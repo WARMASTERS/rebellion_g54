@@ -776,7 +776,11 @@ module RebellionG54; class Game
     @current_decision = upcoming.call
     raise "#{@current_decision} not a Decision" unless @current_decision.is_a?(Decision)
 
-    if @current_decision.can_auto_complete?
+    if @current_decision.empty?
+      # Can happen when a lose influence decision targets a player who died to a challenge.
+      # We can't auto-complete it because there's no callback, so advance.
+      generic_advance_phase
+    elsif @current_decision.can_auto_complete?
       # If we can auto-complete a decision, do it.
 
       unavailable = @current_decision.unavailable

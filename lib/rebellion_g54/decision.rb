@@ -52,6 +52,10 @@ module RebellionG54; class Decision
     @unavailable_choices.each.map { |player, cs| [player, cs.each.map { |x| x.join(': ') }] }.to_h
   end
 
+  def empty?
+    @choices.empty? || @choices.values.all?(&:empty?)
+  end
+
   def can_auto_complete?
     @choices.values.all? { |v| v.empty? || v.size == 1 && !v.values.first.needs_args? }
   end
