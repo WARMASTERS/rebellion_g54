@@ -24,6 +24,7 @@ module RebellionG54; class Role
     peacekeeper: [:special_interests, false].freeze,
     politician: [:special_interests, false].freeze,
     priest: [:special_interests, false].freeze,
+    protestor: [:special_interests, true].freeze,
     reporter: [:communications, false].freeze,
     speculator: [:finance, true].freeze,
     spy: [:finance, false].freeze,
