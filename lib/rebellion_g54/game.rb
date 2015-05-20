@@ -240,6 +240,10 @@ module RebellionG54; class Game
       end
     end
 
+    @players.each { |player|
+      raise "#{player} didn't get #{STARTING_INFLUENCE} cards" unless player.influence == STARTING_INFLUENCE
+    }
+
     next_turn
 
     [true, '']
