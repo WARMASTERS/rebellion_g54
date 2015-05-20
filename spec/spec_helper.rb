@@ -12,8 +12,14 @@ def example_game(num_players, roles: nil, rigged_roles: nil, coins: nil)
   if roles
     roles = [roles] unless roles.is_a?(Array)
     game.roles = roles
-  else
-    game.roles = [:banker, :director, :guerrilla, :politician, :peacekeeper]
+  end
+
+  # Always have a set of 5 cards even in tests.
+  # Tests can go weird if some players start with < 2 cards.
+  if game.roles.size < RebellionG54::Game::ROLES_PER_GAME
+    default_roles = [:banker, :director, :guerrilla, :politician, :peacekeeper]
+    new_roles = default_roles - game.roles
+    game.roles.concat(new_roles.take(RebellionG54::Game::ROLES_PER_GAME - game.roles.size))
   end
 
   num_players.times { |i| game.add_player("p#{i + 1}") }

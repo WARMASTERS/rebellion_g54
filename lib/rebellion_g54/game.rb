@@ -191,8 +191,8 @@ module RebellionG54; class Game
   def start_game(strict_roles: true, shuffle_players: true, rigged_players: nil)
     raise "Game #{@channel_name} already started" if @started
 
+    return [false, "Need #{ROLES_PER_GAME} roles instead of #{@roles.size}"] if @roles.size != ROLES_PER_GAME
     if strict_roles
-      return [false, "Need #{ROLES_PER_GAME} roles instead of #{@roles.size}"] if @roles.size != ROLES_PER_GAME
       invalid_roles = @roles.reject { |r| Role::ALL.has_key?(r) }
       return [false, "Roles #{invalid_roles} are invalid"] unless invalid_roles.empty?
     end
