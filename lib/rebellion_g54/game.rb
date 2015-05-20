@@ -256,6 +256,15 @@ module RebellionG54; class Game
   end
 
   #----------------------------------------------
+  # Action resolvers need these methods.
+  #----------------------------------------------
+
+  def give_new_card_from_deck(token, player)
+    raise 'Only Game or action resolvers should call this method' if token != @action_token
+    player.receive_cards(@main_token, [@deck.shift])
+  end
+
+  #----------------------------------------------
   # Various tokens
   #----------------------------------------------
 
