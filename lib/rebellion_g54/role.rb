@@ -12,6 +12,7 @@ module RebellionG54; class Role
     banker: [:finance, false].freeze,
     capitalist: [:finance, true].freeze,
     crime_boss: [:force, true].freeze,
+    communist: [:special_interests, true].freeze,
     customs_officer: [:special_interests, true].freeze,
     director: [:communications, false].freeze,
     farmer: [:finance, false].freeze,

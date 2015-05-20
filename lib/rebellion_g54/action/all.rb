@@ -3,6 +3,7 @@ require 'rebellion_g54/action/coup'
 
 require 'rebellion_g54/action/banker'
 require 'rebellion_g54/action/capitalist'
+require 'rebellion_g54/action/communist'
 require 'rebellion_g54/action/crime_boss'
 require 'rebellion_g54/action/customs_officer'
 require 'rebellion_g54/action/director'
