@@ -14,6 +14,10 @@ RSpec.describe RebellionG54::Action::Lawyer do
   let!(:u2) { users[1] }
   let!(:u3) { users[2] }
 
+  it 'has alive players' do
+    expect(game.each_player.map { |p| p }).to be_all(&:alive?)
+  end
+
   it 'does not allow use of lawyer' do
     expect(game.choice_names[u1]).to_not include('lawyer')
   end

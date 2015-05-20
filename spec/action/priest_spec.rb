@@ -3,8 +3,13 @@ require 'spec_helper'
 require 'rebellion_g54/action/priest'
 
 RSpec.describe RebellionG54::Action::Priest do
+  let(:game) { example_game(3, roles: :priest) }
+
+  it 'has alive players' do
+    expect(game.each_player.map { |p| p }).to be_all(&:alive?)
+  end
+
   context 'when using priest' do
-    let(:game) { example_game(3, roles: :priest) }
     let(:users) { game.users }
     let!(:u1) { users[0] }
     let!(:u2) { users[1] }

@@ -3,8 +3,13 @@ require 'spec_helper'
 require 'rebellion_g54/action/general'
 
 RSpec.describe RebellionG54::Action::General do
+  let(:game) { example_game(3, coins: 5, roles: :general) }
+
+  it 'has players with 2 influence' do
+    expect(game.each_player.map { |p| p }).to be_all { |p| p.influence == 2 }
+  end
+
   context 'when using general' do
-    let(:game) { example_game(3, coins: 5, roles: [:general, :banker, :director]) }
     let(:users) { game.users }
     let!(:u1) { users[0] }
     let!(:u2) { users[1] }

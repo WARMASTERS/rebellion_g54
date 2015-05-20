@@ -3,8 +3,13 @@ require 'spec_helper'
 require 'rebellion_g54/action/capitalist'
 
 RSpec.describe RebellionG54::Action::Capitalist do
+  let(:game) { example_game(3, roles: :capitalist) }
+
+  it 'has alive players' do
+    expect(game.each_player.map { |p| p }).to be_all(&:alive?)
+  end
+
   context 'when using capitalist' do
-    let(:game) { example_game(3, roles: :capitalist) }
     let(:users) { game.users }
     let!(:u1) { users[0] }
     let!(:u2) { users[1] }

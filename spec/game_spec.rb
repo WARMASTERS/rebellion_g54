@@ -15,6 +15,14 @@ RSpec.describe RebellionG54::Game do
       expect(subject.size).to be == 2
     end
 
+    it 'has alive players' do
+      expect(subject.each_player.map { |p| p }).to be_all(&:alive?)
+    end
+
+    it 'has players with 2 influence' do
+      expect(subject.each_player.map { |p| p }).to be_all { |p| p.influence == 2 }
+    end
+
     it 'has a turn number' do
       expect(subject.turn_number).to be == 1
     end
