@@ -310,7 +310,14 @@ module RebellionG54; class Game
       Decision.single_player(
         current_turn.id, player, "Pick a card for #{target ? target.to_s : 'yourself'}?",
         choices: @communications_available.each_with_index.map { |card, i|
-          ["pick#{i + 1}", Choice.new("Pick #{card}") { cb_communications_assign(target || player, card) }]
+          if (giver = @communications_assignments[card][0]) == player
+            text = "Yours"
+          elsif giver
+            text = "From #{giver}"
+          else
+            text = "Drawn"
+          end
+          ["pick#{i + 1}", Choice.new("Pick #{card} (#{text})") { cb_communications_assign(target || player, card) }]
         }.to_h
       )
     })
