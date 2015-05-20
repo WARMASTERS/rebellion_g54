@@ -50,6 +50,18 @@ RSpec.describe RebellionG54::Action::TestOnLoseInfluence do
       context 'when I challenge' do
         before(:each) { game.take_choice(user, 'challenge') }
 
+        it 'removes side card for the opponent' do
+          player = game.find_player(opponent)
+          side_cards = player.each_side_card.map { |c| c }
+          expect(side_cards).to be_empty
+        end
+
+        it 'adds revealed card for the opponent' do
+          player = game.find_player(opponent)
+          revealed_cards = player.each_revealed_card.map { |c| c.role }
+          expect(revealed_cards).to be == [:test_on_lose_influence]
+        end
+
         it 'asks me for lose decision' do
           expect(game.choice_names).to be == { user => [
             'lose1', 'lose2', 'test_on_lose_influence1', 'test_on_lose_influence2'
@@ -101,6 +113,18 @@ RSpec.describe RebellionG54::Action::TestOnLoseInfluence do
 
       context 'when I challenge' do
         before(:each) { game.take_choice(user, 'challenge') }
+
+        it 'removes side card for the opponent' do
+          player = game.find_player(opponent)
+          side_cards = player.each_side_card.map { |c| c }
+          expect(side_cards).to be_empty
+        end
+
+        it 'adds revealed card for the opponent' do
+          player = game.find_player(opponent)
+          revealed_cards = player.each_revealed_card.map { |c| c.role }
+          expect(revealed_cards).to be == [:test_role]
+        end
 
         it 'asks opponent for lose decision' do
           expect(game.choice_names).to be == { opponent => [
