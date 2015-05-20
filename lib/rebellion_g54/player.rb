@@ -48,9 +48,10 @@ module RebellionG54; class Player
     @coins += amount
   end
 
-  def take_coins(token, amount)
+  def take_coins(token, amount, strict: false)
     raise 'Only Game or action resolvers should call this method' if token != @action_token
     if amount > @coins
+      raise "Can't take #{amount} coins from #{self} with #{@coins} coins" if strict
       taken = @coins
       @coins = 0
       return taken

@@ -840,7 +840,7 @@ module RebellionG54; class Game
   def resolve_phase
     current_turn.state = :resolve
     if current_turn.should_resolve?
-      current_player.take_coins(@action_token, current_turn.action.class.cost)
+      current_player.take_coins(@action_token, current_turn.action.class.cost, strict: true)
 
       targets = current_turn.action.original_targets
       successful_joins = current_turn.successful_joins
@@ -848,7 +848,7 @@ module RebellionG54; class Game
       unblocked = targets - successful_blocks
 
       successful_joins.each { |joiner|
-        joiner.take_coins(@action_token, current_turn.action.class.join_cost)
+        joiner.take_coins(@action_token, current_turn.action.class.join_cost, strict: true)
       }
 
       str = "#{current_player} uses #{current_turn.action.class.flavor_name}"
@@ -907,8 +907,7 @@ module RebellionG54; class Game
     return if !@taxing_player || player == @taxing_player
     tax = tax_for(action_class)
     return if tax == 0
-    taken = player.take_coins(@action_token, tax)
-    raise "#{player} can't afford tax of #{action_class}" if taken != tax
+    player.take_coins(@action_token, tax, strict: true)
     output("#{player} pays the tax of #{tax} coin to #{@taxing_player}.")
     @taxing_player.give_coins(@action_token, tax)
   end
