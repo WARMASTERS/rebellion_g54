@@ -316,6 +316,23 @@ module RebellionG54; class Game
     })
   end
 
+  def enqueue_communications_give_card_decision(token, giving_player, communicating_player)
+    raise 'Only Game or action resolvers should call this method' if token != @action_token
+    @upcoming_decisions.unshift(lambda {
+      Decision.single_player(
+        current_turn.id, giving_player, "Pick a card to give to #{communicating_player}",
+        choices: giving_player.each_live_card.with_index.map { |card, i|
+          ["give#{i + 1}", Choice.new("Give #{card}") {
+            # Just going to inline this callback
+            communications_add_card(giving_player, card)
+            next_decision
+            [true, '']
+          }]
+        }.to_h
+      )
+    })
+  end
+
   def enqueue_lose_influence_decision(token, player, extort_cost: nil, extort_player: nil)
     raise 'Only Game or action resolvers should call this method' if token != @action_token
     @upcoming_decisions.unshift(lambda {
