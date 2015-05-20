@@ -12,6 +12,8 @@ def example_game(num_players, roles: nil, rigged_roles: nil, coins: nil)
   if roles
     roles = [roles] unless roles.is_a?(Array)
     game.roles = roles
+  else
+    game.roles = [:banker, :director, :guerrilla, :politician, :peacekeeper]
   end
 
   num_players.times { |i| game.add_player("p#{i + 1}") }
