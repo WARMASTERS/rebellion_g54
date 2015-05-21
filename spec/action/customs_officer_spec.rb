@@ -23,6 +23,14 @@ RSpec.describe RebellionG54::Action::CustomsOfficer do
     context 'when opponent passes' do
       before(:each) { game.take_choice(opponent, 'pass') }
 
+      it 'gives me a tax token' do
+        expect(game.player_tokens).to be == { user => [:tax] }
+      end
+
+      it 'gives the role a tax token' do
+        expect(game.role_tokens).to be == { :customs_officer => [:tax] }
+      end
+
       it 'ends my turn' do
         expect(game.current_user).to_not be == user
       end

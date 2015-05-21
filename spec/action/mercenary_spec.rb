@@ -31,6 +31,10 @@ RSpec.describe RebellionG54::Action::Mercenary do
         context 'when I pass' do
           before(:each) { game.take_choice(user, 'pass') }
 
+          it 'does not give opponent a token' do
+            expect(game.player_tokens).to be_empty
+          end
+
           it 'takes my coins' do
             expect(game.user_coins(user)).to be == 0
           end
@@ -43,6 +47,10 @@ RSpec.describe RebellionG54::Action::Mercenary do
 
       context 'when opponent passes' do
         before(:each) { game.take_choice(opponent, 'pass') }
+
+        it 'gives opponent a token' do
+          expect(game.player_tokens).to be == { opponent => [:disappear] }
+        end
 
         it 'takes my coins' do
           expect(game.user_coins(user)).to be == 0
@@ -82,6 +90,10 @@ RSpec.describe RebellionG54::Action::Mercenary do
                 game.take_choice(user, 'lose1')
               end
 
+              it 'clears opponent token' do
+                expect(game.player_tokens).to be_empty
+              end
+
               it 'continues opponent turn' do
                 expect(game.current_user).to be == opponent
                 expect(game.choice_names.keys).to be == [opponent]
@@ -97,6 +109,10 @@ RSpec.describe RebellionG54::Action::Mercenary do
             context 'when showing the wrong card' do
               before(:each) { game.take_choice(opponent, 'show2') }
 
+              it 'keeps token on opponent' do
+                expect(game.player_tokens).to be == { opponent => [:disappear] }
+              end
+
               it 'decreases opponent influence' do
                 expect(game.user_influence(opponent)).to be == 1
               end
@@ -105,6 +121,10 @@ RSpec.describe RebellionG54::Action::Mercenary do
 
           context 'when I pass' do
             before(:each) { game.take_choice(user, 'pass') }
+
+            it 'clears opponent token' do
+              expect(game.player_tokens).to be_empty
+            end
 
             it 'continues opponent turn' do
               expect(game.current_user).to be == opponent
@@ -146,6 +166,10 @@ RSpec.describe RebellionG54::Action::Mercenary do
                   game.take_choice(user, 'lose1')
                 end
 
+                it 'clears opponent token' do
+                  expect(game.player_tokens).to be_empty
+                end
+
                 it 'ends opponent turn' do
                   expect(game.current_user).to_not be == opponent
                 end
@@ -167,6 +191,10 @@ RSpec.describe RebellionG54::Action::Mercenary do
 
             context 'when I pass' do
               before(:each) { game.take_choice(user, 'pass') }
+
+              it 'clears opponent token' do
+                expect(game.player_tokens).to be_empty
+              end
 
               it 'ends opponent turn' do
                 expect(game.current_user).to_not be == opponent

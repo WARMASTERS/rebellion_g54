@@ -173,6 +173,21 @@ module RebellionG54; class Game
     @current_decision.choice_explanations(player)
   end
 
+  def player_tokens
+    tokens = Hash.new { |h, k| h[k] = [] }
+    tokens[@taxing_player.user] << :tax if @taxing_player
+    tokens[@peace_player.user] << :peace if @peace_player
+    # Treaty is ineffective when there are only two players, so don't bother.
+    @treaty_players.each { |p| tokens[p.user] << :treaty } if self.size > 2
+    @disappear_players.each_key { |p| tokens[p.user] << :disappear }
+    tokens
+  end
+
+  def role_tokens
+    return {} unless @taxed_role
+    { @taxed_role => [:tax] }
+  end
+
   def winner
     return nil if @players.size > 1
     @players.first.user

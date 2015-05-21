@@ -41,6 +41,10 @@ RSpec.describe RebellionG54::Action::ForeignConsular do
       game.take_choice(u3, 'pass')
     end
 
+    it 'shows the treaty token' do
+      expect(game.player_tokens).to be == { u1 => [:treaty], u2 => [:treaty] }
+    end
+
     it 'ends my turn' do
       expect(game.current_user).to be == u2
     end

@@ -45,6 +45,10 @@ RSpec.describe RebellionG54::Action::Peacekeeper do
         expect(game.user_coins(user)).to be == 8
       end
 
+      it 'shows the treaty token' do
+        expect(game.player_tokens).to be == { user => [:peace] }
+      end
+
       it 'ends my turn' do
         expect(game.current_user).to_not be == user
       end
