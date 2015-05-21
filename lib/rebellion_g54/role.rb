@@ -22,6 +22,7 @@ module RebellionG54; class Role
     intellectual: [:special_interests, false].freeze,
     judge: [:force, false].freeze,
     lawyer: [:special_interests, false].freeze,
+    mercenary: [:force, true].freeze,
     missionary: [:special_interests, true].freeze,
     newscaster: [:communications, false].freeze,
     peacekeeper: [:special_interests, false].freeze,
