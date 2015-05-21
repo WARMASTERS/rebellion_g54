@@ -448,13 +448,15 @@ module RebellionG54; class Game
   def player_loses_card(player, card)
     player.flip_card(@main_token, card)
     output("#{player} loses influence over a #{card} and now has #{player.influence} influence")
+    check_whether_player_died(player)
+  end
 
-    if player.influence == 0
-      @players.delete(player)
-      @dead_players << player
-      enqueue_on_death_decisions(player)
-      @output_streams.each { |os| os.player_died(player.user) }
-    end
+  def check_whether_player_died(player)
+    return if player.influence > 0
+    @players.delete(player)
+    @dead_players << player
+    enqueue_on_death_decisions(player)
+    @output_streams.each { |os| os.player_died(player.user) }
   end
 
   # Removes card from player, switches with new from deck
