@@ -420,7 +420,9 @@ module RebellionG54; class Game
       choices << [extort_cost, {
         'pay' => Choice.new("Pay #{extort_cost} to #{extort_player}") { cb_extorted(player, extort_player, extort_cost) }
       }] if extort_cost && extort_player
-      @actions.select { |a| a.timing == :on_lose_influence }.each { |action|
+      @actions.select { |a|
+        a.timing == :on_lose_influence && (action_class != Action::Coup || a.responds_to_coup?)
+      }.each { |action|
         cost = tax_for(player, action)
         player.each_live_card.with_index { |card, i|
           text = "Claim #{card} is #{Role.to_s(action.required_role)}#{" (tax of #{cost} coin)" if cost > 0}"

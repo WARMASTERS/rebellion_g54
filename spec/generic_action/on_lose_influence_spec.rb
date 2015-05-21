@@ -8,6 +8,7 @@ module RebellionG54; module Action
     @description = 'Gain 5 coins'
     @required_role = :test_on_lose_influence
     @timing = :on_lose_influence
+    @responds_to_coup = true
 
     def resolve(game, token, active_player, _, _)
       active_player.give_coins(token, 5)

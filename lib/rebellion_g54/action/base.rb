@@ -28,12 +28,14 @@ module RebellionG54; module Action; class Base
   inheritable_attributes :timing, :arguments, :cost, :targets_all
   inheritable_attributes :joinable, :join_cost, :join_requires_role, :blockable
   inheritable_attributes :another_turn
+  inheritable_attributes :responds_to_coup
 
   class << self
     alias :joinable? :joinable
     alias :join_requires_role? :join_requires_role
     alias :blockable? :blockable
     alias :another_turn? :another_turn
+    alias :responds_to_coup? :responds_to_coup
   end
 
   @flavor_name = 'UNNAMED'
@@ -48,6 +50,7 @@ module RebellionG54; module Action; class Base
   @join_requires_role = false
   @blockable = false
   @another_turn = false
+  @responds_to_coup = false # Only important for :on_lose_influence
 
   # This is used to build Decisions.
   # A Player indicates "my_class_name" to use the MyClassName action.
