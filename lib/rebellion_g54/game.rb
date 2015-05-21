@@ -910,6 +910,7 @@ module RebellionG54; class Game
             output("#{claim.claimant} uses #{claim.action_class.flavor_name}: #{action.effect}!")
             action.resolve(self, @action_token, claim.claimant, [], [])
           end
+          check_whether_player_died(claim.claimant)
           generic_advance_phase
         }}
       )

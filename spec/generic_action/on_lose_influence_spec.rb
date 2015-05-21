@@ -193,4 +193,35 @@ RSpec.describe RebellionG54::Action::TestOnLoseInfluence do
 
     it_should_behave_like 'an on_lose_influence action'
   end
+
+  context 'when claiming on your last influence' do
+    let(:game) { example_game(3, coins: 7, roles: [:test_on_lose_influence, :test_role], rigged_roles: [:test_on_lose_influence, :test_role]) }
+    let(:users) { game.users }
+    let!(:u1) { users[0] }
+    let!(:u2) { users[1] }
+    let!(:u3) { users[2] }
+
+    before(:each) do
+      game.take_choice(u1, 'coup', u3)
+      game.take_choice(u3, 'lose1')
+      game.take_choice(u2, 'coup', u3)
+      game.take_choice(u3, 'test_on_lose_influence1')
+      game.take_choice(u1, 'pass')
+      game.take_choice(u2, 'pass')
+    end
+
+    it 'removes u3 from the game' do
+      expect(game.users).to_not include(u3)
+    end
+
+    it 'considers u3 to be dead' do
+      expect(game.find_player(u3)).to be_nil
+      expect(game.find_dead_player(u3)).to_not be_nil
+    end
+
+    it 'skips u3 in turn order' do
+      expect(game.current_user).to_not be == u3
+      expect(game.current_user).to be == u1
+    end
+  end
 end
