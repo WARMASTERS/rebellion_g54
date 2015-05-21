@@ -47,6 +47,9 @@ module RebellionG54; class Game
     @treaty_players = [].freeze
     @peace_player = nil
 
+    # Hash[Player => Action] (what action placed that token on you?)
+    @disappear_players = {}
+
     # Hash[Action => Hash[Player(dead_player) => Array[Player(claimant)]]]
     @death_claims = {}
 
@@ -290,6 +293,12 @@ module RebellionG54; class Game
     @peace_player = player
   end
 
+  def set_disappear(token, player, action)
+    raise 'Only Game or action resolvers should call this method' if token != @action_token
+    assert_in_array(player, @players)
+    @disappear_players[player] = action
+  end
+
   #----------------------------------------------
   # Communications
   #----------------------------------------------
@@ -374,12 +383,22 @@ module RebellionG54; class Game
     })
   end
 
-  def enqueue_lose_influence_decision(token, player, extort_cost: nil, extort_player: nil)
+  def enqueue_lose_influence_decision(token, player, disappear_action: nil, extort_cost: nil, extort_player: nil)
     raise 'Only Game or action resolvers should call this method' if token != @action_token
     @upcoming_decisions.unshift(lambda {
       choices = player.each_live_card.with_index.map { |card, i|
         [0, { "lose#{i + 1}" => Choice.new("Lose #{card}") { cb_lose_card(player, card) }}]
       }
+      if disappear_action
+        cost = tax_for(disappear_action.class)
+        text = "Block #{disappear_action.class.flavor_name}"
+        text << " ( tax of #{cost} coins)" if cost > 0
+        choices << [cost, {
+          "#{disappear_action.class.slug}" => Choice.new(text) {
+            cb_block_disappear(player, disappear_action, end_turn: true)
+          }
+        }]
+      end
       choices << [extort_cost, {
         'pay' => Choice.new("Pay #{extort_cost} to #{extort_player}") { cb_extorted(player, extort_player, extort_cost) }
       }] if extort_cost && extort_player
@@ -647,6 +666,18 @@ module RebellionG54; class Game
     [true, '']
   end
 
+  def cb_block_disappear(player, action, start_turn: false, end_turn: false)
+    output("#{player} would like to block #{action.class.flavor_name}!")
+    new_claim = Claim.new(player, action.class, :block)
+    enqueue_challenge_decision_and_pay_tax(new_claim)
+    # This one pushes, so putting it here is right.
+    enqueue_disappear_resolution(new_claim, relose_if_wrong: end_turn)
+    # Re-enqueue my action decision.
+    @upcoming_decisions.push(lambda { decision_for_new_turn(player) }) if start_turn
+    next_decision
+    [true, '']
+  end
+
   def cb_extorted(extorted_player, extorting_player, extort_cost)
     output("#{extorted_player} gives in to extortion and pays #{extort_cost} coins to #{extorting_player}.")
     extorted_player.take_coins(@action_token, extort_cost, strict: true)
@@ -681,11 +712,25 @@ module RebellionG54; class Game
     last_player = @turns.size >= 2 ? @turns[-2].active_player : nil
     too_many_turns, legal = affordable.partition { |action| last_player == player && action.another_turn? }
 
+    choices = legal.map { |action|
+      [action.slug, Choice.new(action.name_and_effect) { |args| cb_action(player, action, args) }]
+    }.to_h
+
+    # If player has a disappear token, add the block option.
+    if (disappear_action = @disappear_players[player])
+      action_class = disappear_action.class
+      tax = tax_for(action_class)
+      if player.coins >= tax
+        name = action_class.flavor_name
+        choices['block'] = Choice.new("Block #{name}#{" (tax of #{tax} coin)" if tax > 0}") {
+          cb_block_disappear(player, disappear_action, start_turn: true)
+        }
+      end
+    end
+
     Decision.single_player(
       current_turn.id, player, "#{player}'s turn to choose an action",
-      choices: legal.map { |action|
-        [action.slug, Choice.new(action.name_and_effect) { |args| cb_action(player, action, args) }]
-      }.to_h,
+      choices: choices,
       unavailable_choices: unaffordable.map { |action|
         [action.slug, "Need #{format_costs(action).join(' and ')}"]
       }.concat(too_many_turns.map { |action|
@@ -842,10 +887,31 @@ module RebellionG54; class Game
       Decision.single_player(
         current_turn.id, claim.claimant, "Resolve your #{claim.action_class}",
         choices: { 'resolve' => Choice.new('Resolve') {
-          action = claim.action_class.new
-          output("#{claim.claimant} uses #{claim.action_class.flavor_name}: #{action.effect}")
-          action.resolve(self, @action_token, claim.claimant, [], []) if claim.truthful?
+          if claim.truthful?
+            action = claim.action_class.new
+            output("#{claim.claimant} uses #{claim.action_class.flavor_name}: #{action.effect}!")
+            action.resolve(self, @action_token, claim.claimant, [], [])
+          end
           generic_advance_phase
+        }}
+      )
+    })
+  end
+
+  # Also should get auto-resolved.
+  def enqueue_disappear_resolution(claim, relose_if_wrong: false)
+    @upcoming_decisions.push(lambda {
+      Decision.single_player(
+        current_turn.id, claim.claimant, "Resolve your #{claim.action_class}",
+        choices: { 'resolve' => Choice.new('Resolve') {
+          if claim.truthful?
+            output("#{claim.claimant} blocks #{claim.action_class.flavor_name} with #{Role.to_s(claim.action_class.required_role)}!")
+            @disappear_players.delete(claim.claimant)
+            generic_advance_phase
+          else
+            enqueue_lose_influence_decision(@action_token, claim.claimant) if relose_if_wrong
+            next_decision
+          end
         }}
       )
     })
@@ -936,6 +1002,10 @@ module RebellionG54; class Game
       output(str)
 
       current_turn.action.resolve(self, @action_token, current_player, successful_joins, unblocked)
+    end
+
+    if (disappear_action = @disappear_players[current_player])
+      enqueue_lose_influence_decision(@action_token, current_player, disappear_action: disappear_action)
     end
 
     if @upcoming_decisions.empty?
