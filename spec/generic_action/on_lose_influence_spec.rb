@@ -206,8 +206,8 @@ RSpec.describe RebellionG54::Action::TestOnLoseInfluence do
       game.take_choice(u3, 'lose1')
       game.take_choice(u2, 'coup', u3)
       game.take_choice(u3, 'test_on_lose_influence1')
-      game.take_choice(u1, 'pass')
       game.take_choice(u2, 'pass')
+      game.take_choice(u1, 'pass')
     end
 
     it 'removes u3 from the game' do
