@@ -46,4 +46,29 @@ RSpec.describe RebellionG54::Action::Newscaster do
       end
     end
   end
+
+  # This test makes sure state is cleaned up between communications actions.
+  # It was not originally, so the second communications action would break.
+  # This is one of the first bugs discovered in real playtesting!
+  context 'when using newscaster twice in the same game' do
+    before(:each) do
+      game.take_choice(user, 'newscaster')
+      game.take_choice(opponent, 'pass')
+      game.take_choice(user, 'pick1')
+      game.take_choice(user, 'pick2')
+      game.take_choice(opponent, 'newscaster')
+      game.take_choice(user, 'pass')
+      game.take_choice(opponent, 'pick1')
+      game.take_choice(opponent, 'pick2')
+    end
+
+    it 'has taken coins from both players' do
+      expect(game.user_coins(user)).to be == 1
+      expect(game.user_coins(opponent)).to be == 1
+    end
+
+    it 'is the first players turn' do
+      expect(game.current_user).to be == user
+    end
+  end
 end

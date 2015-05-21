@@ -482,6 +482,7 @@ module RebellionG54; class Game
     }
 
     @deck.shuffle!
+    @communications_available.clear
     @communications_assignments.clear
   end
 
