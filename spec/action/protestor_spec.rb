@@ -18,10 +18,7 @@ RSpec.describe RebellionG54::Action::Protestor do
     before(:each) { game.take_choice(u1, 'protestor', u2) }
 
     it 'asks opponents for challenge decision' do
-      expect(game.choice_names).to be == {
-        u2 => ['challenge', 'pass'],
-        u3 => ['challenge', 'pass'],
-      }
+      expect(game.choice_names).to include({ u2 => ['challenge', 'pass'] })
     end
 
     context 'when opponents pass' do
