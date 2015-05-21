@@ -17,6 +17,7 @@ module RebellionG54; class Game
   STARTING_COINS = 2
 
   attr_reader :id, :channel_name, :started, :roles
+  attr_accessor :synchronous_challenges
   attr_accessor :output_streams
 
   alias :started? :started
@@ -40,6 +41,8 @@ module RebellionG54; class Game
     @started = false
     # roles is frozen once game begins
     @roles = [:director, :banker, :guerrilla, :politician, :peacekeeper]
+
+    @synchronous_challenges = true
 
     @taxed_role = nil
     @taxing_player = nil
@@ -818,18 +821,37 @@ module RebellionG54; class Game
     # Since taxes always happen in conjunction with making a challengeable claim.
     pay_tax(claim.claimant, claim.action_class)
 
-    @upcoming_decisions.unshift(lambda {
-      text = claim.card ? 'the face-down card being' : 'having influence over'
-      Decision.new(
-        current_turn.id, "Challenge #{claim.claimant} on #{text} #{Role.to_s(claim.role)}?",
-        choices: (@players - [claim.claimant]).map { |challenger|
-          [challenger, {
+    text = claim.card ? 'the face-down card being' : 'having influence over'
+    description = "Challenge #{claim.claimant} on #{text} #{Role.to_s(claim.role)}?"
+    challengers = @players - [claim.claimant]
+
+    if @synchronous_challenges
+      challengers.reverse.each { |challenger|
+        @upcoming_decisions.unshift(lambda {
+          choices = {
             'challenge' => Choice.new('Challenge!!!') { cb_challenge(claim, challenger) },
             'pass' => Choice.new('Do not challenge') { cb_pass_challenge(claim, challenger) },
-          }]
-        }.to_h
-      )
-    })
+          }
+          Decision.single_player(
+            current_turn.id, challenger, description,
+            # If someone's already challenged it, do nothing.
+            choices: claim.challenger ? {} : choices
+          )
+        })
+      }
+    else
+      @upcoming_decisions.unshift(lambda {
+        Decision.new(
+          current_turn.id, description,
+          choices: challengers.map { |challenger|
+            [challenger, {
+              'challenge' => Choice.new('Challenge!!!') { cb_challenge(claim, challenger) },
+              'pass' => Choice.new('Do not challenge') { cb_pass_challenge(claim, challenger) },
+            }]
+          }.to_h
+        )
+      })
+    end
   end
 
   def enqueue_challenge_response_decision(claim, challenger)
