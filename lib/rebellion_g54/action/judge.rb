@@ -16,6 +16,6 @@ module RebellionG54; module Action; class Judge < BaseSingleTarget
     # Remember... if target blocks, target_players is empty
     # But I still want the original target to get the money.
     @original_targets.each { |p| p.give_coins(token, 3) }
-    target_players.each { |p| game.enqueue_lose_influence_decision(token, p) }
+    target_players.each { |p| game.enqueue_lose_influence_decision(token, p, self.class) }
   end
 end; end; end

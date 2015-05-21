@@ -10,7 +10,7 @@ module RebellionG54; module Action; class CrimeBoss < BaseSingleTarget
   def resolve(game, token, active_player, join_players, target_players)
     target_players.each { |p|
       game.enqueue_lose_influence_decision(
-        token, p, extort_cost: 2, extort_player: active_player
+        token, p, self.class, extort_cost: 2, extort_player: active_player
       )
     }
   end

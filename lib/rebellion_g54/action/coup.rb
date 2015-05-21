@@ -6,6 +6,6 @@ module RebellionG54; module Action; class Coup < BaseSingleTarget
   @cost = 7
 
   def resolve(game, token, active_player, join_players, target_players)
-    target_players.each { |p| game.enqueue_lose_influence_decision(token, p) }
+    target_players.each { |p| game.enqueue_lose_influence_decision(token, p, self.class) }
   end
 end; end; end

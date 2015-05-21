@@ -401,7 +401,7 @@ module RebellionG54; class Game
     })
   end
 
-  def enqueue_lose_influence_decision(token, player, disappear_action: nil, extort_cost: nil, extort_player: nil)
+  def enqueue_lose_influence_decision(token, player, action_class, disappear_action: nil, extort_cost: nil, extort_player: nil)
     raise 'Only Game or action resolvers should call this method' if token != @action_token
     @upcoming_decisions.unshift(lambda {
       choices = player.each_live_card.with_index.map { |card, i|
@@ -644,7 +644,7 @@ module RebellionG54; class Game
         replace_card_with_new(claim.claimant, card)
       end
       claim.truthful = true
-      enqueue_lose_influence_decision(@action_token, claim.challenger)
+      enqueue_lose_influence_decision(@action_token, claim.challenger, nil)
       next_decision
     else
       output("#{claim.claimant} was lying! It was a #{card}, not a #{Role.to_s(claim.role)}! #{claim.claimant} can't #{claim.effect} this round.")
@@ -652,7 +652,7 @@ module RebellionG54; class Game
       claim.truthful = false
       if on_lose_influence
         claim.claimant.flip_side_card(@main_token, card)
-        enqueue_lose_influence_decision(@action_token, claim.claimant)
+        enqueue_lose_influence_decision(@action_token, claim.claimant, nil)
         next_decision
       else
         player_loses_card(claim.claimant, card)
@@ -954,7 +954,7 @@ module RebellionG54; class Game
             @disappear_players.delete(claim.claimant)
             generic_advance_phase
           else
-            enqueue_lose_influence_decision(@action_token, claim.claimant) if relose_if_wrong
+            enqueue_lose_influence_decision(@action_token, claim.claimant, claim.action_class) if relose_if_wrong
             next_decision
           end
         }}
@@ -1050,7 +1050,7 @@ module RebellionG54; class Game
     end
 
     if (disappear_action = @disappear_players[current_player])
-      enqueue_lose_influence_decision(@action_token, current_player, disappear_action: disappear_action)
+      enqueue_lose_influence_decision(@action_token, current_player, disappear_action.class, disappear_action: disappear_action)
     end
 
     if @upcoming_decisions.empty?
