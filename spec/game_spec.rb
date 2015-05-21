@@ -43,6 +43,106 @@ RSpec.describe RebellionG54::Game do
     end
   end
 
+  context 'in a game with synchronous challenges' do
+    subject { example_game(
+      3, synchronous_challenges: true, roles: [:banker, :director], rigged_roles: [:director, :banker]
+    ) }
+    let(:users) { subject.users }
+    let!(:u1) { users[0] }
+    let!(:u2) { users[1] }
+    let!(:u3) { users[2] }
+
+    before(:each) { subject.take_choice(u1, 'banker') }
+
+    it 'asks only u2 for challenge decision' do
+      expect(subject.choice_names).to be == { u2 => ['challenge', 'pass'] }
+    end
+
+    context 'when u2 passes' do
+      before(:each) { subject.take_choice(u2, 'pass') }
+
+      it 'asks u3 for challenge decision' do
+        expect(subject.choice_names).to be == { u3 => ['challenge', 'pass'] }
+      end
+    end
+
+    context 'when u2 challenges' do
+      before(:each) do
+        subject.take_choice(u2, 'challenge')
+        subject.take_choice(u1, 'show1')
+      end
+
+      # Wanting to make sure it doesn't make u3 also challenge.
+
+      it 'ends the turn' do
+        expect(subject.current_user).to be == u2
+      end
+    end
+  end
+
+  context 'in a game with asynchronous challenges' do
+    subject { example_game(
+      3, synchronous_challenges: false, roles: [:banker, :director], rigged_roles: [:director, :banker]
+    ) }
+    let(:users) { subject.users }
+    let!(:u1) { users[0] }
+    let!(:u2) { users[1] }
+    let!(:u3) { users[2] }
+
+    before(:each) { subject.take_choice(u1, 'banker') }
+
+    it 'asks both opponents for challenge decision' do
+      expect(subject.choice_names).to be == {
+        u2 => ['challenge', 'pass'],
+        u3 => ['challenge', 'pass'],
+      }
+    end
+
+    context 'when u2 challenges' do
+      before(:each) do
+        subject.take_choice(u2, 'challenge')
+        subject.take_choice(u1, 'show1')
+      end
+
+      it 'ends the turn' do
+        expect(subject.current_user).to be == u2
+      end
+    end
+
+    context 'when u3 challenges' do
+      before(:each) do
+        subject.take_choice(u3, 'challenge')
+        subject.take_choice(u1, 'show1')
+      end
+
+      it 'ends the turn' do
+        expect(subject.current_user).to be == u2
+      end
+    end
+
+    context 'when u2 then u3 pass' do
+      before(:each) do
+        subject.take_choice(u2, 'pass')
+        subject.take_choice(u3, 'pass')
+      end
+
+      it 'ends the turn' do
+        expect(subject.current_user).to be == u2
+      end
+    end
+
+    context 'when u3 then u2 pass' do
+      before(:each) do
+        subject.take_choice(u3, 'pass')
+        subject.take_choice(u2, 'pass')
+      end
+
+      it 'ends the turn' do
+        expect(subject.current_user).to be == u2
+      end
+    end
+  end
+
   context 'wrong number of roles' do
     subject { RebellionG54::Game.new('testgame') }
     before(:each) do
