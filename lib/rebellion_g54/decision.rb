@@ -85,3 +85,15 @@ module RebellionG54; class Decision
     end
   end
 end; end
+
+module RebellionG54; class AutoDecision
+  attr_reader :description
+  def initialize(description, &block)
+    @description = description
+    @block = block
+  end
+
+  def call
+    @block.call
+  end
+end; end

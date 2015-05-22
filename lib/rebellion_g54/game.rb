@@ -885,20 +885,16 @@ module RebellionG54; class Game
 
       # Enqueue resolution "decision" to happen after everyone has made claims/challenges
       @upcoming_decisions.unshift(lambda {
-        # Kind of freaky that the dead player is making the decision, but it should auto-resolve.
         successful_claimers = @death_claims[action_class][dead_player].select(&:truthful?).map(&:claimant)
-        Decision.single_player(
-          current_turn.id, dead_player, "Resolve #{action_class} for your death",
-          choices: { 'resolve' => Choice.new('Resolve') {
-            unless successful_claimers.empty?
-              action = action_class.new(dead_player)
-              verb = successful_claimers.size == 1 ? 'uses' : 'use'
-              output("#{successful_claimers.join(', ')} #{verb} #{action_class.flavor_name}: #{action.effect}")
-              action.resolve(self, @action_token, dead_player, successful_claimers, [dead_player])
-            end
-            generic_advance_phase
-          }}
-        )
+        AutoDecision.new("#{action_class} for #{dead_player}'s death") {
+          unless successful_claimers.empty?
+            action = action_class.new(dead_player)
+            verb = successful_claimers.size == 1 ? 'uses' : 'use'
+            output("#{successful_claimers.join(', ')} #{verb} #{action_class.flavor_name}: #{action.effect}")
+            action.resolve(self, @action_token, dead_player, successful_claimers, [dead_player])
+          end
+          generic_advance_phase
+        }
       })
     }
 
@@ -927,41 +923,32 @@ module RebellionG54; class Game
     true
   end
 
-  # This decision should get auto-resolved (it has one choice)
-  # It's here to make sure the timing of the resolutions of on_lose_influence effects is right.
   def enqueue_reaction_resolution(claim)
     @upcoming_decisions.unshift(lambda {
-      Decision.single_player(
-        current_turn.id, claim.claimant, "Resolve your #{claim.action_class}",
-        choices: { 'resolve' => Choice.new('Resolve') {
-          if claim.truthful?
-            action = claim.action_class.new
-            output("#{claim.claimant} uses #{claim.action_class.flavor_name}: #{action.effect}!")
-            action.resolve(self, @action_token, claim.claimant, [], [])
-          end
-          check_whether_player_died(claim.claimant)
-          generic_advance_phase
-        }}
-      )
+      AutoDecision.new("#{claim.action_class} for #{claim.claimant}") {
+        if claim.truthful?
+          action = claim.action_class.new
+          output("#{claim.claimant} uses #{claim.action_class.flavor_name}: #{action.effect}!")
+          action.resolve(self, @action_token, claim.claimant, [], [])
+        end
+        check_whether_player_died(claim.claimant)
+        generic_advance_phase
+      }
     })
   end
 
-  # Also should get auto-resolved.
   def enqueue_disappear_resolution(claim, relose_if_wrong: false)
     @upcoming_decisions.push(lambda {
-      Decision.single_player(
-        current_turn.id, claim.claimant, "Resolve your #{claim.action_class}",
-        choices: { 'resolve' => Choice.new('Resolve') {
-          if claim.truthful?
-            output("#{claim.claimant} blocks #{claim.action_class.flavor_name} with #{Role.to_s(claim.action_class.required_role)}!")
-            @disappear_players.delete(claim.claimant)
-            generic_advance_phase
-          else
-            enqueue_lose_influence_decision(@action_token, claim.claimant, claim.action_class) if relose_if_wrong
-            next_decision
-          end
-        }}
-      )
+      AutoDecision.new("#{claim.action_class} against #{claim.claimant}") {
+        if claim.truthful?
+          output("#{claim.claimant} blocks #{claim.action_class.flavor_name} with #{Role.to_s(claim.action_class.required_role)}!")
+          @disappear_players.delete(claim.claimant)
+          generic_advance_phase
+        else
+          enqueue_lose_influence_decision(@action_token, claim.claimant, claim.action_class) if relose_if_wrong
+          next_decision
+        end
+      }
     })
   end
 
@@ -972,6 +959,13 @@ module RebellionG54; class Game
   def next_decision
     upcoming = @upcoming_decisions.shift
     @current_decision = upcoming.call
+
+    if @current_decision.is_a?(AutoDecision)
+      # It is assumed the decision will advance the state as necessary.
+      @current_decision.call
+      return
+    end
+
     raise "#{@current_decision} not a Decision" unless @current_decision.is_a?(Decision)
 
     if @current_decision.empty?
