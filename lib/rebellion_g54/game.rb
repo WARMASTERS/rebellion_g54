@@ -462,6 +462,7 @@ module RebellionG54; class Game
       @taxing_player = nil
       @taxed_role = nil
     end
+    player.die!(@main_token)
     @players.delete(player)
     @dead_players << player
     enqueue_on_death_decisions(player)

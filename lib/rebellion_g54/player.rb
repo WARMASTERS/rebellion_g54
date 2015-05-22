@@ -1,12 +1,19 @@
 module RebellionG54; class Player
   attr_accessor :user
   attr_reader :coins
+  attr_reader :alive
+  alias :alive? :alive
 
   def initialize(user, main_token, action_token)
     @user = user
     @coins = 0
     @main_token = main_token
     @action_token = action_token
+
+    # Being living is having the capability to make decisions.
+    # Sometimes you have 0 live cards but are still alive.
+    # For example, as a Missionary resolves.
+    @alive = true
 
     # Live cards are face down. You can claim influence over them.
     @live_cards = []
@@ -19,10 +26,6 @@ module RebellionG54; class Player
 
   def to_s
     @user.respond_to?(:name) ? @user.name : @user
-  end
-
-  def alive?
-    influence > 0
   end
 
   def influence
@@ -61,6 +64,12 @@ module RebellionG54; class Player
   end
 
   # These need the main token (only game should have it)
+
+  def die!(token)
+    raise 'Only Game should call this method' if token != @main_token
+    raise "#{self} has cards and should not die yet" if influence > 0
+    @alive = false
+  end
 
   def receive_cards(token, cards)
     raise 'Only Game should call this method' if token != @main_token
