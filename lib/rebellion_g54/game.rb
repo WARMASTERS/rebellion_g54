@@ -453,6 +453,10 @@ module RebellionG54; class Game
 
   def check_whether_player_died(player)
     return if player.influence > 0
+    if @taxing_player == player
+      @taxing_player = nil
+      @taxed_role = nil
+    end
     @players.delete(player)
     @dead_players << player
     enqueue_on_death_decisions(player)

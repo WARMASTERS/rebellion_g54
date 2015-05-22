@@ -75,4 +75,29 @@ RSpec.describe RebellionG54::Action::CustomsOfficer do
       end
     end
   end
+
+  context 'when taxing player dies' do
+    let(:game) { example_game(3, coins: 7, roles: :customs_officer) }
+    let(:users) { game.users }
+    let!(:u1) { users[0] }
+    let!(:u2) { users[1] }
+    let!(:u3) { users[2] }
+
+    before(:each) do
+      game.take_choice(u1, 'customs_officer', 'customs_officer')
+      game.take_choice(u2, 'pass')
+      game.take_choice(u3, 'pass')
+      game.take_choice(u2, 'coup', u1)
+      game.take_choice(u1, 'lose1')
+      game.take_choice(u3, 'coup', u1)
+    end
+
+    it 'removes the player tax token' do
+      expect(game.player_tokens).to be_empty
+    end
+
+    it 'removes the role tax token' do
+      expect(game.role_tokens).to be_empty
+    end
+  end
 end
