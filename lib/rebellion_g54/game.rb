@@ -405,7 +405,7 @@ module RebellionG54; class Game
         [0, { "lose#{i + 1}" => Choice.new("Lose #{card}") { cb_lose_card(player, card) }}]
       }
       if disappear_action
-        cost = tax_for(disappear_action.class)
+        cost = tax_for(player, disappear_action.class)
         text = "Block #{disappear_action.class.flavor_name}"
         text << " ( tax of #{cost} coins)" if cost > 0
         choices << [cost, {
@@ -418,7 +418,7 @@ module RebellionG54; class Game
         'pay' => Choice.new("Pay #{extort_cost} to #{extort_player}") { cb_extorted(player, extort_player, extort_cost) }
       }] if extort_cost && extort_player
       @actions.select { |a| a.timing == :on_lose_influence }.each { |action|
-        cost = tax_for(action)
+        cost = tax_for(player, action)
         player.each_live_card.with_index { |card, i|
           text = "Claim #{card} is #{Role.to_s(action.required_role)}#{" (tax of #{cost} coin)" if cost > 0}"
           choices << [cost, { "#{action.slug}#{i + 1}" => Choice.new(text) { cb_react_to_lose_card(player, card, action) }}]
@@ -724,7 +724,7 @@ module RebellionG54; class Game
     # You must coup if you have >= 10 coins.
     actions_possible = player.coins >= 10 ? [Action::Coup] : @actions.select { |a| a.timing == :main_action }
     # If you can't afford an action it's not available to you.
-    affordable, unaffordable = actions_possible.partition { |action| player.coins >= action.cost + tax_for(action) }
+    affordable, unaffordable = actions_possible.partition { |action| player.coins >= action.cost + tax_for(player, action) }
 
     # If you got another turn from your last action, nothing you do this turn can get you another.
     last_player = @turns.size >= 2 ? @turns[-2].active_player : nil
@@ -737,7 +737,7 @@ module RebellionG54; class Game
     # If player has a disappear token, add the block option.
     if (disappear_action = @disappear_players[player])
       action_class = disappear_action.class
-      tax = tax_for(action_class)
+      tax = tax_for(player, action_class)
       if player.coins >= tax
         name = action_class.flavor_name
         choices['block'] = Choice.new("Block #{name}#{" (tax of #{tax} coin)" if tax > 0}") {
@@ -750,7 +750,7 @@ module RebellionG54; class Game
       current_turn.id, player, "#{player}'s turn to choose an action",
       choices: choices,
       unavailable_choices: unaffordable.map { |action|
-        [action.slug, "Need #{format_costs(action).join(' and ')}"]
+        [action.slug, "Need #{format_costs(player, action).join(' and ')}"]
       }.concat(too_many_turns.map { |action|
         [action.slug, 'Would cause three turns in a row']
       }).to_h
@@ -763,7 +763,7 @@ module RebellionG54; class Game
     candidates.each { |candidate|
       @upcoming_decisions.push(lambda {
         reqs = []
-        tax = tax_for(turn.action.class)
+        tax = tax_for(candidate, turn.action.class)
         cost = tax
         if requires_role
           reqs << "also claiming #{Role.to_s(turn.action.class.required_role)}"
@@ -835,7 +835,7 @@ module RebellionG54; class Game
         [0, { "show#{i + 1}" => Choice.new("Show #{card}") { cb_show_for_challenge(claim, card) }}]
       }
       @actions.select { |a| a.timing == :on_lose_influence }.each { |action|
-        cost = tax_for(action)
+        cost = tax_for(player, action)
         player.each_live_card.with_index { |card, i|
           text = "Claim #{card} is #{Role.to_s(action.required_role)}#{" (tax of #{cost} coin)" if cost > 0}"
           choices << [cost, { "#{action.slug}#{i + 1}" => Choice.new(text) { cb_lose_challenge_and_react(claim, card, action) }}]
@@ -882,7 +882,7 @@ module RebellionG54; class Game
       # If that assumption ever turns out to be wrong, then modify this code.
       death_actions.each { |action|
         @upcoming_decisions.unshift(lambda {
-          cost = tax_for(action)
+          cost = tax_for(player, action)
           text = "Claim influence over #{Role.to_s(action.required_role)}#{" (tax of #{cost} coin)" if cost > 0}"
           Decision.single_player_with_costs(
             current_turn.id, player, "#{dead_player} died. #{text}?",
@@ -1065,26 +1065,27 @@ module RebellionG54; class Game
     raise "#{player} not in game #{@channel_name}" unless array.include?(player)
   end
 
-  def tax_for(action)
+  def tax_for(player, action)
     return 0 unless action.required_role
+    return 0 if !@taxing_player || player == @taxing_player || !@taxing_player.alive?
     action.required_role == @taxed_role ? 1 : 0
   end
 
   def pay_tax(player, action_class)
-    return if !@taxing_player || player == @taxing_player
-    tax = tax_for(action_class)
+    tax = tax_for(player, action_class)
     return if tax == 0
     player.take_coins(@action_token, tax, strict: true)
     output("#{player} pays the tax of #{tax} coin to #{@taxing_player}.")
     @taxing_player.give_coins(@action_token, tax)
   end
 
-  def format_costs(action)
+  def format_costs(player, action)
+    tax = tax_for(player, action)
     [
       ("#{action.cost} coins for #{action.flavor_name}" if action.cost > 1),
       ("1 coin for #{action.flavor_name}" if action.cost == 1),
-      ("#{tax_for(action)} coins for tax" if tax_for(action) > 1),
-      ("1 coin for tax" if tax_for(action) == 1),
+      ("#{tax} coins for tax" if tax > 1),
+      ("1 coin for tax" if tax == 1),
     ].compact
   end
 end; end

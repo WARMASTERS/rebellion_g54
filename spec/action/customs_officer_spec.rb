@@ -66,5 +66,13 @@ RSpec.describe RebellionG54::Action::CustomsOfficer do
     it 'does not allow opponent to use customs officer' do
       expect(game.choice_names[opponent]).to_not include('customs_officer')
     end
+
+    context 'on my turn' do
+      before(:each) { game.take_choice(opponent, 'income') }
+
+      it 'allows me to use customs officer' do
+        expect(game.choice_names[user]).to include('customs_officer')
+      end
+    end
   end
 end
