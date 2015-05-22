@@ -968,7 +968,7 @@ module RebellionG54; class Game
 
     raise "#{@current_decision} not a Decision" unless @current_decision.is_a?(Decision)
 
-    if @current_decision.empty?
+    if @current_decision.empty? || !@current_decision.valid_players.any?(&:alive?)
       # Can happen when a lose influence decision targets a player who died to a challenge.
       # We can't auto-complete it because there's no callback, so advance.
       generic_advance_phase
@@ -983,9 +983,6 @@ module RebellionG54; class Game
       end
       @current_decision.auto_complete
       # Don't call advance_phase because the callback will do it =D
-    elsif !@current_decision.valid_players.any?(&:alive?)
-      # If decision is only by dead player, advance it.
-      generic_advance_phase
     end
   end
 
