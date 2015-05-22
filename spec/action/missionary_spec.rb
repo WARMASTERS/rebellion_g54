@@ -48,4 +48,36 @@ RSpec.describe RebellionG54::Action::Missionary do
       end
     end
   end
+
+  context 'while losing last influence' do
+    let(:game) { example_game(2, coins: 11, roles: [:missionary, :guerrilla]) }
+    before(:each) do
+      game.take_choice(user, 'coup', opponent)
+      game.take_choice(opponent, 'lose1')
+      game.take_choice(opponent, 'coup', user)
+      game.take_choice(user, 'lose1')
+      game.take_choice(user, 'guerrilla', opponent)
+      game.take_choice(opponent, 'pass')
+      game.take_choice(opponent, 'pass')
+    end
+
+    it 'asks opponent for lose decision' do
+      expect(game.choice_names).to be == { opponent => ['lose1', 'missionary1']}
+    end
+
+    context 'when opponent claims missionary' do
+      before(:each) do
+        game.take_choice(opponent, 'missionary1')
+        game.take_choice(user, 'pass')
+      end
+
+      it 'gives opponent influence' do
+        expect(game.user_influence(opponent)).to be == 1
+      end
+
+      it 'ends my turn' do
+        expect(game.current_user).to_not be == user
+      end
+    end
+  end
 end
