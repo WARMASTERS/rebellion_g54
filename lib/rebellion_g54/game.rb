@@ -55,6 +55,7 @@ module RebellionG54; class Game
 
     # Hash[Action => Hash[Player(dead_player) => Array[Player(claimant)]]]
     @death_claims = {}
+    @deaths_this_turn = []
 
     # Set on game start (actions is frozen, deck changes)
     @actions = []
@@ -464,8 +465,8 @@ module RebellionG54; class Game
     end
     player.die!(@main_token)
     @players.delete(player)
+    @deaths_this_turn << player
     @dead_players << player
-    enqueue_on_death_decisions(player)
     @output_streams.each { |os| os.player_died(player.user) }
   end
 
@@ -992,7 +993,8 @@ module RebellionG54; class Game
       when :action; join_phase
       when :join; block_phase
       when :block; resolve_phase
-      when :resolve; next_turn
+      when :resolve; on_death_or_next_turn(:resolve)
+      when :on_death; on_death_or_next_turn(:on_death)
       when :finished; raise "Can't advance #{current_turn.id}; turn ended"
       end
     else
@@ -1048,9 +1050,18 @@ module RebellionG54; class Game
     end
 
     if @upcoming_decisions.empty?
-      next_turn
+      on_death_or_next_turn(:resolve)
     else
       next_decision
+    end
+  end
+
+  def on_death_or_next_turn(previous_state)
+    current_turn.state = :on_death unless previous_state == :on_death
+    if !@deaths_this_turn.empty? && enqueue_on_death_decisions(@deaths_this_turn.shift)
+      next_decision
+    else
+      next_turn
     end
   end
 

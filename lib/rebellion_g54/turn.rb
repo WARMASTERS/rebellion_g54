@@ -26,7 +26,8 @@ module RebellionG54; class Turn
     join: 1,
     block: 2,
     resolve: 3,
-    finished: 4,
+    on_death: 4,
+    finished: 5,
   }
 
   def state=(new_state)
