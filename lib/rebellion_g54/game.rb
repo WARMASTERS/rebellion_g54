@@ -675,7 +675,7 @@ module RebellionG54; class Game
 
   def enqueue_block_decision(turn)
     enqueue_multi_decision(
-      turn, turn.action.potential_blockers, 'block',
+      turn, turn.action.potential_blockers - [turn.active_player], 'block',
       lambda { |candidate| cb_block(turn, candidate) },
       lambda { |candidate| cb_pass_block(turn, candidate) },
       requires_role: true,
