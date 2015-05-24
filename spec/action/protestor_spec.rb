@@ -113,4 +113,31 @@ RSpec.describe RebellionG54::Action::Protestor do
       end
     end
   end
+
+  context 'when used in a two player game' do
+    let(:game) { example_game(2, coins: 3, roles: :protestor) }
+    let(:user) { game.choice_names.keys.first }
+    let(:opponent) { game.users.last }
+
+    before(:each) do
+      game.take_choice(user, 'protestor', opponent)
+      game.take_choice(opponent, 'pass')
+    end
+
+    it 'takes my coins' do
+      expect(game.user_coins(user)).to be == 1
+    end
+
+    it 'does not take opponent coins' do
+      expect(game.user_coins(opponent)).to be == 3
+    end
+
+    it 'ends my turn' do
+      expect(game.current_user).to_not be == user
+    end
+
+    it 'does not decrease target influence' do
+      expect(game.user_influence(opponent)).to be == 2
+    end
+  end
 end
