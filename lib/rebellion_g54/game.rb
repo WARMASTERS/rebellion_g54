@@ -830,7 +830,7 @@ module RebellionG54; class Game
     challengers = @players - [claim.claimant]
 
     if @synchronous_challenges
-      challengers.reverse.each { |challenger|
+      challengers.reverse_each { |challenger|
         @upcoming_decisions.unshift(lambda {
           choices = {
             'challenge' => Choice.new('Challenge!!!') { cb_challenge(claim, challenger) },
@@ -902,7 +902,7 @@ module RebellionG54; class Game
     # Enqueue decision for each player * each on_death role
     # Reverse so that current player goes first
     # (we are doing unshift, not append, because these can chain)
-    @players.reverse.each { |player|
+    @players.reverse_each { |player|
       # There's only one on_death action right now.
       # If there ever were multiples, this code lets p1 decide whether to claim one or both, then p2, etc.
       # If that assumption ever turns out to be wrong, then modify this code.
