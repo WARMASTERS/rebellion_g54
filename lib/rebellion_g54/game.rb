@@ -6,6 +6,7 @@ require 'rebellion_g54/decision'
 require 'rebellion_g54/player'
 require 'rebellion_g54/role'
 require 'rebellion_g54/turn'
+require 'time'
 
 module RebellionG54; class Game
   GAME_NAME = 'Rebellion G54'
@@ -17,6 +18,7 @@ module RebellionG54; class Game
   STARTING_COINS = 2
 
   attr_reader :id, :channel_name, :started, :roles
+  attr_reader :start_time
   attr_accessor :synchronous_challenges
   attr_accessor :output_streams
 
@@ -39,6 +41,7 @@ module RebellionG54; class Game
     # dead players are no longer in @players, preventing them from taking actions
     @dead_players = []
     @started = false
+    @start_time = nil
     # roles is frozen once game begins
     @roles = [:director, :banker, :guerrilla, :politician, :peacekeeper]
 
@@ -220,6 +223,7 @@ module RebellionG54; class Game
     end
 
     @started = true
+    @start_time = Time.now
     @roles.freeze
 
     @players.shuffle! if shuffle_players
