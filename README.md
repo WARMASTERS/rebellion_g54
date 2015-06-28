@@ -14,7 +14,7 @@ Each inner Hash is of the form:
 `{description: String, needs_args: Boolean, available: true}` if that choice is available.
 `{why_unavailable: String, available: false}` if that choice is unavailable.
 
-When a player makes a choice, use `Game#take_choice(User, String(choice), String(args)) -> [Boolean(success), String(error)]`.
+When a player makes a choice, use `Game#take_choice(User, String(choice), *args) -> [Boolean(success), String(error)]`.
 If failed, the `error` will describe why.
 If successful, the game state will be updated, `error` will be an empty string, and a new decision will be available.
 

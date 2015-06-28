@@ -275,10 +275,10 @@ module RebellionG54; class Game
     [true, '']
   end
 
-  def take_choice(user, choice, args = '')
+  def take_choice(user, choice, *args)
     player = find_player(user)
     return [false, "#{user} is not in the game"] unless player
-    @current_decision.take_choice(player, choice, args.split)
+    @current_decision.take_choice(player, choice, args)
   end
 
   #----------------------------------------------

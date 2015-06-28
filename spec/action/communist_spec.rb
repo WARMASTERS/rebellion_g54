@@ -7,7 +7,7 @@ RSpec.describe RebellionG54::Action::Communist do
     let(:game) { example_game(2, roles: :communist, coins: 4) }
     let(:user) { game.choice_names.keys.first }
     let(:opponent) { game.users.last }
-    before(:each) { game.take_choice(user, 'communist', "#{opponent} #{user}") }
+    before(:each) { game.take_choice(user, 'communist', opponent, user) }
 
     it 'asks opponent for challenge decision' do
       expect(game.choice_names).to be == { opponent => ['challenge', 'pass'] }
@@ -61,7 +61,7 @@ RSpec.describe RebellionG54::Action::Communist do
     let(:game) { example_game(2, roles: :communist, coins: 4) }
     let(:user) { game.choice_names.keys.first }
     let(:opponent) { game.users.last }
-    before(:each) { game.take_choice(user, 'communist', "#{user} #{opponent}") }
+    before(:each) { game.take_choice(user, 'communist', user, opponent) }
 
     it 'asks opponent for challenge decision' do
       expect(game.choice_names).to be == { opponent => ['challenge', 'pass'] }
@@ -101,19 +101,19 @@ RSpec.describe RebellionG54::Action::Communist do
     end
 
     it 'complains if first target is not richest' do
-      success, error = game.take_choice(u3, 'communist', "#{u2} #{u3}")
+      success, error = game.take_choice(u3, 'communist', u2, u3)
       expect(error).to include('not the richest')
       expect(success).to be == false
     end
 
     it 'complains if second target is not poorest' do
-      success, error = game.take_choice(u3, 'communist', "#{u1} #{u2}")
+      success, error = game.take_choice(u3, 'communist', u1, u2)
       expect(error).to include('not the poorest')
       expect(success).to be == false
     end
 
     it 'succeeds if targets are correct' do
-      success, _ = game.take_choice(u3, 'communist', "#{u1} #{u3}")
+      success, _ = game.take_choice(u3, 'communist', u1, u3)
       expect(success).to be == true
     end
   end
