@@ -8,7 +8,7 @@ RSpec.describe RebellionG54::Game do
     let(:user) { subject.choice_names.keys.first }
 
     it 'cannot be started again' do
-      expect { subject.start_game }.to raise_exception
+      expect { subject.start_game }.to raise_exception(StandardError)
     end
 
     it 'has players' do
