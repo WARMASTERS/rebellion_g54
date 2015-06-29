@@ -44,7 +44,7 @@ module RebellionG54; class Decision
   def choice_explanations(player)
     return [] unless @choices.has_key?(player)
     available = @choices[player].each.map { |label, choice|
-      [label, {description: choice.description, is_action: choice.is_action?, available: true}]
+      [label, {description: choice.description, args: choice.args, is_action: choice.is_action?, available: true}]
     }.to_h
     return available unless @unavailable_choices.has_key?(player)
     available.merge(@unavailable_choices[player].each.map { |label, why_unavailable|
