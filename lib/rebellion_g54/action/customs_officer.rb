@@ -6,7 +6,7 @@ module RebellionG54; module Action; class CustomsOfficer < Base
   @flavor_name = 'Tax'
   @description = 'Place a 1-coin tax on any claims of %s'
   @required_role = :customs_officer
-  @arguments = [:role].freeze
+  @arguments = [{type: :role}.freeze].freeze
 
   def initialize(target_role)
     @target_role = target_role

@@ -18,7 +18,7 @@ module RebellionG54; module Action
     @flavor_name = 'Generic Friendly'
     @description = 'Make %s gain 1 coin'
     @required_role = :test_friendly
-    @arguments = [player: {friendly: true}.freeze].freeze
+    @arguments = [{type: :player, friendly: true}.freeze].freeze
 
     def resolve(game, token, active_player, join_players, target_players)
       target_players.each { |t| t.give_coins(token, 1) }

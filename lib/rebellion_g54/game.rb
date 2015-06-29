@@ -527,14 +527,8 @@ module RebellionG54; class Game
     action_class.arguments.zip(args).each { |expected_arg, arg|
       return [false, "Missing an argument: #{expected_arg}"] unless arg
 
-      if expected_arg.is_a?(Hash)
-        raise "Malformed #{expected_arg} argument" unless expected_arg.size == 1
-        arg_type = expected_arg.keys.first
-        opts = expected_arg.values.first
-      else
-        arg_type = expected_arg
-        opts = {}
-      end
+      arg_type = expected_arg[:type]
+      opts = expected_arg
 
       case arg_type
       when :player

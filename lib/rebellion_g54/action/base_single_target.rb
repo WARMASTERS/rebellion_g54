@@ -3,7 +3,7 @@ require 'rebellion_g54/action/base'
 module RebellionG54; module Action; class BaseSingleTarget < Base
   attr_reader :original_targets
 
-  @arguments = [:player].freeze
+  @arguments = [{type: :player}.freeze].freeze
 
   def self.effect
     @description % 'target'

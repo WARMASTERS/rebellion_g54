@@ -5,8 +5,8 @@ module RebellionG54; module Action; class Communist < Base
   @description = 'Take 3 coins from %s and give to %s'
   @required_role = :communist
   @arguments = [
-    {player: {richest: true, self: true}.freeze}.freeze,
-    {player: {poorest: true, self: true, friendly: true}.freeze}.freeze,
+    {type: :player, richest: true, self: true}.freeze,
+    {type: :player, poorest: true, self: true, friendly: true}.freeze,
   ].freeze
   @blockable = true
 
