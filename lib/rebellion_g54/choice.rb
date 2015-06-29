@@ -5,7 +5,8 @@ module RebellionG54; class Choice
     @block = block
   end
 
-  def needs_args?
+  def is_action?
+    # This relies on a very shaky assumption, but it's true so far...
     !@block.parameters.empty?
   end
 
