@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name          = 'rebellion_g54'
-  s.version       = '1.0.1'
+  s.version       = '1.0.2'
   s.summary       = 'Rebellion G54'
   s.description   = 'Backend for managing a Rebellion G54 game'
   s.authors       = ['Peter Tseng']
