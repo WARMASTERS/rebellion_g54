@@ -746,7 +746,7 @@ module RebellionG54; class Game
     too_many_turns, legal = affordable.partition { |action| last_player == player && action.another_turn? }
 
     choices = legal.map { |action|
-      [action.slug, Choice.new(action.name_and_effect) { |args| cb_action(player, action, args) }]
+      [action.slug, Choice.new(action.name_and_effect, action.arguments) { |args| cb_action(player, action, args) }]
     }.to_h
 
     # If player has a disappear token, add the block option.

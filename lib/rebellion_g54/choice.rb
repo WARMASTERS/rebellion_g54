@@ -1,7 +1,10 @@
 module RebellionG54; class Choice
   attr_reader :description
-  def initialize(description, &block)
+  attr_reader :args
+
+  def initialize(description, args = [], &block)
     @description = description
+    @args = args.freeze
     @block = block
   end
 
