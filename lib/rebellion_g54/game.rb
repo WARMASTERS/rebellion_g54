@@ -730,39 +730,36 @@ module RebellionG54; class Game
 
   # OK fine, this one just returns it, but close enough.
   def decision_for_new_turn(player)
-    # You must coup if you have >= 10 coins.
-    actions_possible = player.coins >= 10 ? [Action::Coup] : @actions.select { |a| a.timing == :main_action }
-    # If you can't afford an action it's not available to you.
-    affordable, unaffordable = actions_possible.partition { |action| player.coins >= action.cost + tax_for(player, action) }
+    choices = @actions.select { |a| a.timing == :main_action }.map { |action|
+      choice = Choice.new(action.name_and_effect, action.arguments) { |args| cb_action(player, action, args) }
+      last_player = @turns.size >= 2 ? @turns[-2].active_player : nil
 
-    # If you got another turn from your last action, nothing you do this turn can get you another.
-    last_player = @turns.size >= 2 ? @turns[-2].active_player : nil
-    too_many_turns, legal = affordable.partition { |action| last_player == player && action.another_turn? }
+      if player.coins >= 10 && action != Action::Coup
+        choice.unavailable!('You must Coup when you have at least 10 coins.')
+      elsif player.coins < action.cost + tax_for(player, action)
+        choice.unavailable!("Need #{format_costs(player, action).join(' and ')}")
+      elsif last_player == player && action.another_turn?
+        choice.unavailable!('Would cause three turns in a row')
+      end
 
-    choices = legal.map { |action|
-      [action.slug, Choice.new(action.name_and_effect, action.arguments) { |args| cb_action(player, action, args) }]
+      [action.slug, choice]
     }.to_h
 
     # If player has a disappear token, add the block option.
     if (disappear_action = @disappear_players[player])
       action_class = disappear_action.class
       tax = tax_for(player, action_class)
-      if player.coins >= tax
-        name = action_class.flavor_name
-        choices['block'] = Choice.new("Block #{name}#{" (tax of #{tax} coin)" if tax > 0}") {
-          cb_block_disappear(player, disappear_action, start_turn: true)
-        }
-      end
+      name = action_class.flavor_name
+      choice = Choice.new("Block #{name}#{" (tax of #{tax} coin)" if tax > 0}") {
+        cb_block_disappear(player, disappear_action, start_turn: true)
+      }
+      choice.unavailable!("Need #{format_costs(player, action_class)}") if player.coins < tax
+      choices['block'] = choice
     end
 
     Decision.single_player(
       current_turn.id, player, "#{player}'s turn to choose an action",
       choices: choices,
-      unavailable_choices: unaffordable.map { |action|
-        [action.slug, "Need #{format_costs(player, action).join(' and ')}"]
-      }.concat(too_many_turns.map { |action|
-        [action.slug, 'Would cause three turns in a row']
-      }).to_h
     )
   end
 

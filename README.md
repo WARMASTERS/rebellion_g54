@@ -11,8 +11,8 @@ Create an instance of `RebellionG54::Game`, use `Game#add_player(User)` to add s
 Any time a decision is required of a player, the game presents a `Game#decision_description -> String` and `Game#choice_names -> Hash[User => String]` naming the choices each player can take.
 Calling `Game#choice_explanations(User) -> Hash[String => Hash]` gives an explanation of each choice for that `User`, where each string is a choice name.
 Each inner Hash is of the form:
-`{description: String, args: [Hash], is_action: Boolean, available: true}` if that choice is available.
-`{why_unavailable: String, available: false}` if that choice is unavailable.
+`{description: String, args: [Hash], is_action: Boolean, available: Boolean}`
+Additionally, the key `why_unavailable: String` is present if the choice is unavailable.
 Each element of args is a Hash that at least contains the :type key, whose value may be :player or :role.
 If :type is :player, the :self, :friendly, :richest, and :poorest keys may also be present, with boolean values.
 
