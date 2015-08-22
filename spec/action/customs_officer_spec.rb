@@ -1,8 +1,21 @@
 require 'spec_helper'
 
+require 'rebellion_g54/action/base_single_target'
 require 'rebellion_g54/action/customs_officer'
 
 module RebellionG54; module Action
+  class TestBlockableGood < BaseSingleTarget
+    @flavor_name = 'Generic Blockable'
+    @description = 'Gain 1 coin, give %s 1 coin'
+    @required_role = :test_blockable_good
+    @blockable = true
+
+    def resolve(game, token, active_player, join_players, target_players)
+      active_player.give_coins(token, 1)
+      target_players.each { |t| t.give_coins(token, 1) }
+    end
+  end
+
   class DummyRole < Base
   end
 end; end
@@ -73,6 +86,34 @@ RSpec.describe RebellionG54::Action::CustomsOfficer do
       it 'allows me to use customs officer' do
         expect(game.choice_names[user]).to include('customs_officer')
       end
+    end
+  end
+
+  context 'when cannot afford tax to block' do
+    # I need the dummy role for a role that gives no income
+    let(:game) { example_game(2, coins: 0, roles: [:customs_officer, :test_blockable_good, :dummy_role]) }
+
+    before(:each) do
+      game.take_choice(user, 'customs_officer', 'test_blockable_good')
+      game.take_choice(opponent, 'pass')
+      # Using a dummy role shouldn't cause any bad effects...
+      game.take_choice(opponent, 'dummy_role')
+      game.take_choice(user, 'test_blockable_good', opponent)
+      # This should pass on the challenge/pass decision
+      game.take_choice(opponent, 'pass')
+      # The block decision should be skipped.
+    end
+
+    it 'ends my turn' do
+      expect(game.current_user).to be == opponent
+    end
+
+    it 'executes the action' do
+      expect(game.user_coins(user)).to be == 1
+    end
+
+    it 'does not let opponent block' do
+      expect(game.user_coins(opponent)).to be == 1
     end
   end
 
