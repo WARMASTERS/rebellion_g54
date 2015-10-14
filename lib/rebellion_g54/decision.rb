@@ -11,6 +11,7 @@ module RebellionG54; class Decision
     @unavailable_choices = choices.map { |player, menu|
       [player, menu.reject { |_, choice| choice.available? }]
     }.to_h
+    @unavailable_choices.select! { |_, cs| !cs.empty? }
 
     @available_choices = choices.map { |player, menu|
       [player, menu.select { |_, choice| choice.available? }]
