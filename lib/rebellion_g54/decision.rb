@@ -80,15 +80,15 @@ module RebellionG54; class Decision
   end
 
   # Expected by Game#take_choice to return [Boolean(success), String(error_message)]
-  def take_choice(player, choice, args)
+  def take_choice(player, choice_name, args)
     return [false, "#{player} has no choices to make"] unless @all_choices[player]
 
     # If there's an explanation for why this choice isn't available, show it.
-    if (choice = @all_choices[player][choice.downcase])
+    if (choice = @all_choices[player][choice_name.downcase])
       return [false, choice.why_unavailable] unless choice.available?
       choice.call(args)
     else
-      return [false, "#{choice} is not a valid choice for #{player}"]
+      return [false, "#{choice_name} is not a valid choice for #{player}"]
     end
   end
 end; end
