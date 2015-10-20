@@ -1061,6 +1061,9 @@ module RebellionG54; class Game
       output(str)
 
       current_turn.action.resolve(self, @action_token, current_player, successful_joins, unblocked)
+
+      # Some actions listen for other actions, notify them now (Income -> World Bank)
+      @actions.each { |a| a.action_performed(current_turn.action.class) }
     end
 
     if (disappear_action = @disappear_players[current_player])
