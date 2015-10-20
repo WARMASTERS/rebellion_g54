@@ -39,6 +39,7 @@ module RebellionG54; class Role
     arms_dealer: [:special_interests, true],
     paramilitary: [:force, true],
     plantation_owner: [:finance, true],
+    socialist: [:special_interests, true],
     world_bank: [:finance, true],
   }.freeze
 
