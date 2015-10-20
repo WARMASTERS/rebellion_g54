@@ -9,7 +9,7 @@ require 'rebellion_g54/turn'
 require 'time'
 
 module RebellionG54; class Game
-  GAME_NAME = 'Rebellion G54'
+  GAME_NAME = 'Rebellion G54'.freeze
   MIN_PLAYERS = 2
   MAX_PLAYERS = 6
   ROLES_PER_GAME = 5
