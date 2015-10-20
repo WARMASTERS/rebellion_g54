@@ -26,3 +26,6 @@ require 'rebellion_g54/action/reporter'
 require 'rebellion_g54/action/speculator'
 require 'rebellion_g54/action/spy'
 require 'rebellion_g54/action/writer'
+
+# Anarchy
+require 'rebellion_g54/action/freedom_of_press'

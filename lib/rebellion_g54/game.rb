@@ -19,6 +19,7 @@ module RebellionG54; class Game
 
   attr_reader :id, :channel_name, :started, :roles
   attr_reader :start_time
+  attr_reader :freedom_of_press_enabled
   attr_accessor :synchronous_challenges
   attr_accessor :output_streams
 
@@ -45,6 +46,7 @@ module RebellionG54; class Game
     # roles is frozen once game begins
     @roles = [:director, :banker, :guerrilla, :politician, :peacekeeper]
 
+    @freedom_of_press_enabled = true
     @synchronous_challenges = true
 
     @taxed_role = nil
@@ -204,6 +206,11 @@ module RebellionG54; class Game
   # Setters
   #----------------------------------------------
 
+  def freedom_of_press_enabled=(enabled)
+    raise "Cannot change Freedom of Press in game #{@channel_name}: game in progress" if @started
+    @freedom_of_press_enabled = enabled
+  end
+
   def roles=(new_roles)
     raise "Cannot change roles of game #{@channel_name}: game in progress" if @started
     @roles = new_roles
@@ -231,6 +238,7 @@ module RebellionG54; class Game
     @deck = []
     card_id = 1
     @actions << Action::Income
+    @actions << Action::FreedomOfPress if @freedom_of_press_enabled
     @actions << Action::Coup
     @roles.each do |role|
       @actions << Action.const_get(Role::to_class_name(role))

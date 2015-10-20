@@ -6,7 +6,7 @@ require 'rebellion_g54/game'
 # If roles given, put those roles in the game
 # If rigged_roles given, give each player (up to 3) those roles
 # If coins given, give everyone that many coins.
-def example_game(num_players, synchronous_challenges: false, roles: nil, rigged_roles: nil, coins: nil)
+def example_game(num_players, freedom_of_press: false, synchronous_challenges: false, roles: nil, rigged_roles: nil, coins: nil)
   game = RebellionG54::Game.new('testgame')
 
   if roles
@@ -32,6 +32,7 @@ def example_game(num_players, synchronous_challenges: false, roles: nil, rigged_
   rig_opts[:coins] = coins if coins
 
   game.synchronous_challenges = synchronous_challenges
+  game.freedom_of_press_enabled = freedom_of_press
 
   if rig_opts.empty?
     game.start_game(strict_roles: false)
