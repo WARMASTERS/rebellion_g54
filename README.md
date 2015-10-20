@@ -32,4 +32,4 @@ If a bug is found in the game logic, write a test that fails with the broken log
 
 If a new feature is added, a test should be added.
 Coverage should remain high.
-As of this writing, only three lines are not covered.
+Any added lines that don't have coverage should have a very good reason for not being covered.
