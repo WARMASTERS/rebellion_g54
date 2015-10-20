@@ -31,6 +31,7 @@ module RebellionG54; module Action; class Base
   inheritable_attributes :blockable
   inheritable_attributes :another_turn
   inheritable_attributes :responds_to_coup
+  inheritable_attributes :per_game_state
 
   class << self
     alias :joinable? :joinable
@@ -55,6 +56,8 @@ module RebellionG54; module Action; class Base
   @blockable = false
   @another_turn = false
   @responds_to_coup = false # Only important for :on_lose_influence
+
+  @per_game_state = nil
 
   # This is used to build Decisions.
   # A Player indicates "my_class_name" to use the MyClassName action.

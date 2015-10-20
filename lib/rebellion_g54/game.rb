@@ -241,7 +241,9 @@ module RebellionG54; class Game
     @actions << Action::FreedomOfPress if @freedom_of_press_enabled
     @actions << Action::Coup
     @roles.each do |role|
-      @actions << Action.const_get(Role::to_class_name(role))
+      action = Action.const_get(Role::to_class_name(role))
+      action = action.per_game_state.new if action.per_game_state
+      @actions << action
       3.times.each do
         @deck << Card.new(card_id, role)
         card_id += 1
