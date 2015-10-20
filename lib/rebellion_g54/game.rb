@@ -454,6 +454,17 @@ module RebellionG54; class Game
     })
   end
 
+  def enqueue_communications_random_resolution(token, active_player)
+    @upcoming_decisions.unshift(lambda {
+      AutoDecision.new('Randomly distribute cards') {
+        sources = @communications_assignments.values.map { |src, tgt| src } - [active_player]
+        sources.shuffle!
+        @communications_assignments.values.each { |v| v[1] = sources.shift unless v[1] }
+        generic_advance_phase
+      }
+    })
+  end
+
   def enqueue_lose_influence_decision(token, player, action_class, disappear_action: nil, extort_cost: nil, extort_player: nil)
     raise 'Only Game or action resolvers should call this method' if token != @action_token
     @upcoming_decisions.unshift(lambda {
