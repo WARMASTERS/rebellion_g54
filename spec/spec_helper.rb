@@ -43,6 +43,28 @@ def example_game(num_players, freedom_of_press: false, synchronous_challenges: f
   game
 end
 
+class CollectingStream
+  attr_reader :dead_players, :new_cards_players, :messages
+
+  def initialize
+    @dead_players = []
+    @new_cards_players = []
+    @messages = []
+  end
+
+  def player_died(player)
+    @dead_players << player
+  end
+
+  def new_cards(player)
+    @new_cards_players << player
+  end
+
+  def puts(msg)
+    @messages << msg
+  end
+end
+
 class StdoutStream
   def player_died(player)
     puts("#{player} died")
