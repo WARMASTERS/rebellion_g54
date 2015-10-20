@@ -575,6 +575,13 @@ module RebellionG54; class Game
 
     action = action_class.new(*parsed_args)
 
+    # Conditional costs might cause the player to not be able to take an action.
+    # (Fixed costs should have been rendered invalid already)
+    if player.coins < action.cost + tax_for(player, action_class)
+      costs = format_costs(player, action_class) + action.conditional_costs
+      return [false, "Need #{costs.join(' and ')}"]
+    end
+
     current_turn.action = action
     output("#{player} would like to use #{action}!")
 
