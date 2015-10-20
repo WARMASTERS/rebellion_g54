@@ -1056,6 +1056,8 @@ module RebellionG54; class Game
         joiner.take_coins(@action_token, current_turn.action.class.join_cost, strict: true)
       }
 
+      current_turn.action.prepare(self, @action_token)
+
       str = "#{current_player} uses #{current_turn.action.class.flavor_name}"
       str << " (joined by #{successful_joins.map(&:to_s).join(', ')})" unless successful_joins.empty?
       str << " (blocked by #{successful_blocks.map(&:to_s).join(', ')})" unless successful_blocks.empty?

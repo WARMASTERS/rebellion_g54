@@ -111,6 +111,12 @@ module RebellionG54; module Action; class Base
   def self.action_performed(action_class)
   end
 
+  # Some actions want to set up something that is used in both effect and resolve.
+  # Instead of relying on ordering between effect and resolve, we'll just prepare.
+  # We guarantee that prepare is called before effect and resolve.
+  def prepare(game, token)
+  end
+
   # At this point, challenges have resolved.
   # If this method is called, the active player was not challenged, or was truthful on a challenge.
   # All players in join_players have passed their challenges.
