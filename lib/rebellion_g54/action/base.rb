@@ -71,6 +71,10 @@ module RebellionG54; module Action; class Base
     @description
   end
 
+  def cost
+    self.class.cost
+  end
+
   def player_joined(player)
     # NOTE that this will only be called if join_requires_role is false.
     # Otherwise, we won't know who has actually joined until challenges resolve.

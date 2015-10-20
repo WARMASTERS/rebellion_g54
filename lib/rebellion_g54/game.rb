@@ -1036,7 +1036,7 @@ module RebellionG54; class Game
   def resolve_phase
     current_turn.state = :resolve
     if current_turn.should_resolve?
-      current_player.take_coins(@action_token, current_turn.action.class.cost, strict: true)
+      current_player.take_coins(@action_token, current_turn.action.cost, strict: true)
 
       targets = current_turn.action.original_targets
       successful_joins = current_turn.successful_joins
