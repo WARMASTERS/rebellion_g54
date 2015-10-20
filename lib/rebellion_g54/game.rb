@@ -300,6 +300,11 @@ module RebellionG54; class Game
     player.receive_cards(@main_token, [@deck.shift])
   end
 
+  def random_deck_roles(token, n)
+    raise 'Only Game or action resolvers should call this method' if token != @action_token
+    @deck.sample(n).map(&:role)
+  end
+
   #----------------------------------------------
   # Various tokens
   #----------------------------------------------
