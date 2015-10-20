@@ -34,6 +34,9 @@ module RebellionG54; class Role
     speculator: [:finance, true],
     spy: [:finance, false],
     writer: [:communications, true],
+
+    # Anarchy
+    paramilitary: [:force, true],
   }.freeze
 
   ALL.values.each(&:freeze)
