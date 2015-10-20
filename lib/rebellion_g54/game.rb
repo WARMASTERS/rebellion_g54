@@ -404,6 +404,27 @@ module RebellionG54; class Game
     })
   end
 
+  def enqueue_communications_give_own_card_decision(token, player)
+    raise 'Only Game or action resolvers should call this method' if token != @action_token
+    @upcoming_decisions.unshift(lambda {
+      # If nobody gave us any cards, just have a decision that does nothing.
+      return AutoDecision.new('No available cards') { next_decision } if @communications_available.empty?
+
+      given = @communications_available.map(&:to_s).join(', ')
+      Decision.single_player(
+        current_turn.id, player, 'Pick a card to add to the pool',
+        choices: player.each_live_card.with_index.map { |card, i|
+          ["add#{i + 1}", Choice.new("Add #{card} - others gave #{given}") {
+            # Just going to inline this callback
+            communications_add_card(player, card)
+            next_decision
+            [true, '']
+          }]
+        }.to_h
+      )
+    })
+  end
+
   def enqueue_communications_give_card_decision(token, giving_player, communicating_player, coin: nil)
     raise 'Only Game or action resolvers should call this method' if token != @action_token
     @upcoming_decisions.unshift(lambda {
