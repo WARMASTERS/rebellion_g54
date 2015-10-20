@@ -30,3 +30,4 @@ require 'rebellion_g54/action/writer'
 # Anarchy
 require 'rebellion_g54/action/freedom_of_press'
 require 'rebellion_g54/action/paramilitary'
+require 'rebellion_g54/action/plantation_owner'

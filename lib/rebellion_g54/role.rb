@@ -37,6 +37,7 @@ module RebellionG54; class Role
 
     # Anarchy
     paramilitary: [:force, true],
+    plantation_owner: [:finance, true],
   }.freeze
 
   ALL.values.each(&:freeze)
