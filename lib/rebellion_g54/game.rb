@@ -404,19 +404,31 @@ module RebellionG54; class Game
     })
   end
 
-  def enqueue_communications_give_card_decision(token, giving_player, communicating_player)
+  def enqueue_communications_give_card_decision(token, giving_player, communicating_player, coin: nil)
     raise 'Only Game or action resolvers should call this method' if token != @action_token
     @upcoming_decisions.unshift(lambda {
-      Decision.single_player(
+      choices = [[0, giving_player.each_live_card.with_index.map { |card, i|
+        ["give#{i + 1}", Choice.new("Give #{card}") {
+          # Just going to inline this callback
+          communications_add_card(giving_player, card)
+          next_decision
+          [true, '']
+        }]
+      }.to_h]]
+
+      if coin
+        coin_choice = Choice.new("Give #{coin} coin#{'s' if coin != 1}") {
+          giving_player.take_coins(token, coin, strict: true)
+          communicating_player.give_coins(token, coin)
+          next_decision
+          [true, '']
+        }
+        choices << [coin, {'pay' => coin_choice}]
+      end
+
+      Decision.single_player_with_costs(
         current_turn.id, giving_player, "Pick a card to give to #{communicating_player}",
-        choices: giving_player.each_live_card.with_index.map { |card, i|
-          ["give#{i + 1}", Choice.new("Give #{card}") {
-            # Just going to inline this callback
-            communications_add_card(giving_player, card)
-            next_decision
-            [true, '']
-          }]
-        }.to_h
+        costs_and_choices: choices,
       )
     })
   end
