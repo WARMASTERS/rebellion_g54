@@ -612,7 +612,7 @@ module RebellionG54; class Game
     claim = turn.join(joiner)
     if claim.is_a?(Claim)
       output("#{joiner} would like to join in #{turn.action.class.flavor_name}!")
-      enqueue_challenge_decision_and_pay_tax(claim)
+      enqueue_challenge_decision_and_pay_tax(claim, delayed: turn.action.class.join_challenges_delayed)
       next_decision
     else
       output("#{joiner} joins in #{turn.action.class.flavor_name}!")
@@ -824,7 +824,7 @@ module RebellionG54; class Game
     )
   end
 
-  def enqueue_challenge_decision_and_pay_tax(claim)
+  def enqueue_challenge_decision_and_pay_tax(claim, delayed: false)
     # Since taxes always happen in conjunction with making a challengeable claim.
     pay_tax(claim.claimant, claim.action_class)
 
@@ -833,21 +833,24 @@ module RebellionG54; class Game
     challengers = @players - [claim.claimant]
 
     if @synchronous_challenges
-      challengers.reverse_each { |challenger|
-        @upcoming_decisions.unshift(lambda {
-          choices = {
-            'challenge' => Choice.new('Challenge!!!') { cb_challenge(claim, challenger) },
-            'pass' => Choice.new('Do not challenge') { cb_pass_challenge(claim, challenger) },
-          }
-          Decision.single_player(
-            current_turn.id, challenger, description,
-            # If someone's already challenged it, do nothing.
-            choices: claim.challenger ? {} : choices
-          )
-        })
-      }
+      decisions = challengers.map { |challenger| lambda {
+        choices = {
+          'challenge' => Choice.new('Challenge!!!') { cb_challenge(claim, challenger) },
+          'pass' => Choice.new('Do not challenge') { cb_pass_challenge(claim, challenger) },
+        }
+        Decision.single_player(
+          current_turn.id, challenger, description,
+          # If someone's already challenged it, do nothing.
+          choices: claim.challenger ? {} : choices
+        )
+      }}
+      if delayed
+        @upcoming_decisions.concat(decisions)
+      else
+        @upcoming_decisions.unshift(*decisions)
+      end
     else
-      @upcoming_decisions.unshift(lambda {
+      decision = lambda {
         Decision.new(
           current_turn.id, description,
           choices: challengers.map { |challenger|
@@ -857,7 +860,12 @@ module RebellionG54; class Game
             }]
           }.to_h
         )
-      })
+      }
+      if delayed
+        @upcoming_decisions.push(decision)
+      else
+        @upcoming_decisions.unshift(decision)
+      end
     end
   end
 

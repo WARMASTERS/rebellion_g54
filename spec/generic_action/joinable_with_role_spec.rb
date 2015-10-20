@@ -170,4 +170,63 @@ RSpec.describe RebellionG54::Action::TestJoinableWithRole do
       end
     end
   end
+
+  shared_examples 'action with delayed challenges' do
+    let(:game) { example_game(
+      3,
+      synchronous_challenges: sync_challenges,
+      roles: [:test_joinable_with_role, :dummy_role],
+      rigged_roles: [:test_joinable_with_role, :dummy_role]
+    )}
+    let(:users) { game.users }
+    let!(:u1) { users[0] }
+    let!(:u2) { users[1] }
+    let!(:u3) { users[2] }
+
+    context 'when using test_joinable_with_role' do
+      before(:each) do
+        game.take_choice(u1, 'test_joinable_with_role')
+        # Opponents pass on challenge
+        game.take_choice(u2, 'pass')
+        game.take_choice(u3, 'pass')
+        # u2 joins.
+        game.take_choice(u2, 'join')
+      end
+
+      it 'asks next player whether to join' do
+        expect(game.choice_names).to be == { u3 => ['join', 'pass'] }
+      end
+
+      context 'when player joins' do
+        before(:each) { game.take_choice(u3, 'join') }
+
+        it 'asks for challenge on first joiner' do
+          expect(game.choice_names.keys).to be == (sync_challenges ? [u1] : [u1, u3])
+          expect(game.choice_names.values).to be_all { |x| x == ['challenge', 'pass'] }
+        end
+
+        context 'when players pass' do
+          before(:each) do
+            game.take_choice(u1, 'pass')
+            game.take_choice(u3, 'pass')
+          end
+
+          it 'asks for challenge on second joiner' do
+            expect(game.choice_names.keys).to be == (sync_challenges ? [u1] : [u1, u2])
+            expect(game.choice_names.values).to be_all { |x| x == ['challenge', 'pass'] }
+          end
+        end
+      end
+    end
+  end
+
+  context 'with synchronous challenges' do
+    let(:sync_challenges) { true }
+    it_behaves_like 'action with delayed challenges'
+  end
+
+  context 'with asynchronous challenges' do
+    let(:sync_challenges) { false }
+    it_behaves_like 'action with delayed challenges'
+  end
 end

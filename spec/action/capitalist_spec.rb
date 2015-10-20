@@ -18,11 +18,14 @@ RSpec.describe RebellionG54::Action::Capitalist do
     before(:each) do
       # This is mostly tested in the joinables test and I got lazy
       game.take_choice(u1, 'capitalist')
+      # pass on challenges
       game.take_choice(u2, 'pass')
       game.take_choice(u3, 'pass')
+      # u2 joins, u3 does not (delayed challenges, remember)
       game.take_choice(u2, 'join')
-      game.take_choice(u1, 'pass')
       game.take_choice(u3, 'pass')
+      # u1 and u3 do not challenge u2
+      game.take_choice(u1, 'pass')
       game.take_choice(u3, 'pass')
     end
 

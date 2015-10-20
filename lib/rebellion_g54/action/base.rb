@@ -26,13 +26,16 @@ module RebellionG54; module Action; class Base
   include ClassLevelInheritableAttributes
   inheritable_attributes :flavor_name, :description, :required_role
   inheritable_attributes :timing, :arguments, :cost, :targets_all
-  inheritable_attributes :joinable, :join_cost, :join_requires_role, :blockable
+  inheritable_attributes :joinable, :join_cost, :join_requires_role
+  inheritable_attributes :join_challenges_delayed
+  inheritable_attributes :blockable
   inheritable_attributes :another_turn
   inheritable_attributes :responds_to_coup
 
   class << self
     alias :joinable? :joinable
     alias :join_requires_role? :join_requires_role
+    alias :join_challenges_delayed? :join_challenges_delayed
     alias :blockable? :blockable
     alias :another_turn? :another_turn
     alias :responds_to_coup? :responds_to_coup
@@ -48,6 +51,7 @@ module RebellionG54; module Action; class Base
   @joinable = false
   @join_cost = 0
   @join_requires_role = false
+  @join_challenges_delayed = true
   @blockable = false
   @another_turn = false
   @responds_to_coup = false # Only important for :on_lose_influence
