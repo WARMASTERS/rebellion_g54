@@ -24,7 +24,8 @@ end; end; end
 
 module RebellionG54; module Action; class Base
   include ClassLevelInheritableAttributes
-  inheritable_attributes :flavor_name, :description, :required_role
+  inheritable_attributes :flavor_name, :description
+  inheritable_attributes :required_role, :action_requires_role
   inheritable_attributes :timing, :arguments, :cost, :targets_all
   inheritable_attributes :joinable, :join_cost, :join_requires_role
   inheritable_attributes :join_challenges_delayed
@@ -34,6 +35,7 @@ module RebellionG54; module Action; class Base
   inheritable_attributes :per_game_state
 
   class << self
+    alias :action_requires_role? :action_requires_role
     alias :joinable? :joinable
     alias :join_requires_role? :join_requires_role
     alias :join_challenges_delayed? :join_challenges_delayed
@@ -45,6 +47,7 @@ module RebellionG54; module Action; class Base
   @flavor_name = 'UNNAMED'
   @description = 'Description of this action!'
   @required_role = nil
+  @action_requires_role = true
   @timing = :main_action # Expected values are :main_action, :on_death, and :on_lose_influence
   @arguments = [].freeze
   @cost = 0

@@ -636,7 +636,7 @@ module RebellionG54; class Game
     current_turn.action = action
     output("#{player} would like to use #{action}!")
 
-    if action_class.required_role
+    if action_class.required_role && action_class.action_requires_role
       enqueue_challenge_decision_and_pay_tax(current_turn.action_claim)
       next_decision
     else
