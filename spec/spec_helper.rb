@@ -11,7 +11,7 @@ def example_game(num_players, freedom_of_press: false, synchronous_challenges: f
 
   if roles
     roles = [roles] unless roles.is_a?(Array)
-    game.roles = roles
+    game.roles = roles.dup
   end
 
   # Always have a set of 5 cards even in tests.
