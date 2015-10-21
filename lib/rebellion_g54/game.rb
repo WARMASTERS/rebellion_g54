@@ -55,6 +55,8 @@ module RebellionG54; class Game
     @treaty_players = [].freeze
     @peace_player = nil
 
+    @bomb_player = nil
+
     # Hash[Player => Action] (what action placed that token on you?)
     @disappear_players = {}
 
@@ -186,6 +188,7 @@ module RebellionG54; class Game
     tokens = Hash.new { |h, k| h[k] = [] }
     tokens[@taxing_player.user] << :tax if @taxing_player
     tokens[@peace_player.user] << :peace if @peace_player
+    tokens[@bomb_player.user] << :bomb if @bomb_player
     # Treaty is ineffective when there are only two players, so don't bother.
     @treaty_players.each { |p| tokens[p.user] << :treaty } if self.size > 2
     @disappear_players.each_key { |p| tokens[p.user] << :disappear }
@@ -460,6 +463,80 @@ module RebellionG54; class Game
         sources = @communications_assignments.values.map { |src, tgt| src } - [active_player]
         sources.shuffle!
         @communications_assignments.values.each { |v| v[1] = sources.shift unless v[1] }
+        generic_advance_phase
+      }
+    })
+  end
+
+  def enqueue_bomb_decision(token, player, action_class, eligible_players)
+    @bomb_player = player
+    raise 'Only Game or action resolvers should call this method' if token != @action_token
+
+    @upcoming_decisions.unshift(lambda {
+      # For each eligible player, you could pass the bomb on to that player.
+      claim_choices = eligible_players.map { |target|
+        ["bomb#{target}", Choice.new("Give bomb to #{target}") {
+          output("#{player} would like to give the bomb to #{target}!")
+
+          new_claim = Claim.new(player, action_class, :block)
+
+          @upcoming_decisions.unshift(lambda {
+            AutoDecision.new('Move bomb') {
+              # If claim is still OK, enqueue new bomb decision (this will move the bomb token).
+              if new_claim.truthful?
+                # Some players may have died from challenges; remove them.
+                new_eligible_players = eligible_players.select { |p| p != target && p.alive? }
+                enqueue_bomb_decision(token, target, action_class, new_eligible_players)
+              end
+              next_decision
+            }
+          })
+
+          enqueue_challenge_decision_and_pay_tax(new_claim)
+          next_decision
+          [true, '']
+        }]
+      }.to_h
+
+      # You could defuse the bomb.
+      claim_choices['defuse'] = Choice.new('Defuse bomb') {
+        output("#{player} would like to defuse the bomb!")
+
+        new_claim = Claim.new(player, action_class, :block)
+
+        @upcoming_decisions.unshift(lambda {
+          AutoDecision.new('Defuse bomb') {
+            # If claim is still OK, remove bomb token.
+            @bomb_player = nil if new_claim.truthful?
+            next_decision
+          }
+        })
+
+        enqueue_challenge_decision_and_pay_tax(new_claim)
+        next_decision
+        [true, '']
+      }
+
+      # Or you could take the hit.
+      pass = Choice.new('Do not move or defuse bomb') {
+        next_decision
+        [true, '']
+      }
+
+      cost = tax_for(player, action_class)
+      Decision.single_player_with_costs(
+        current_turn.id, player, 'You are being bombed',
+        costs_and_choices: [[cost, claim_choices], [0, {'pass' => pass}]],
+      )
+    })
+  end
+
+  def enqueue_bomb_detonation(token, action_class)
+    raise 'Only Game or action resolvers should call this method' if token != @action_token
+    @upcoming_decisions.unshift(lambda {
+      AutoDecision.new('Bomb detonates') {
+        enqueue_lose_influence_decision(token, @bomb_player, action_class) if @bomb_player
+        @bomb_player = nil
         generic_advance_phase
       }
     })
