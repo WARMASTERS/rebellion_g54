@@ -36,6 +36,7 @@ module RebellionG54; class Role
     writer: [:communications, true],
 
     # Anarchy
+    anarchist: [:force, true],
     arms_dealer: [:special_interests, true],
     paramilitary: [:force, true],
     plantation_owner: [:finance, true],
