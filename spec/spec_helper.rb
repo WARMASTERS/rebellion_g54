@@ -3,6 +3,11 @@ SimpleCov.start { add_filter '/spec/' }
 
 require 'rebellion_g54/game'
 
+RSpec.configure { |c|
+  c.warnings = true
+  c.disable_monkey_patching!
+}
+
 # If roles given, put those roles in the game
 # If rigged_roles given, give each player (up to 3) those roles
 # If coins given, give everyone that many coins.
