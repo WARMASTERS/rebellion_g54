@@ -9,6 +9,11 @@ module RebellionG54; module Action; class Protestor < BaseSingleTarget
   @join_cost = 3
   @blockable = true
 
+  def initialize(target_player)
+    super(target_player)
+    @joined_player = nil
+  end
+
   def player_joined(player)
     @joined_player = player
   end
