@@ -203,7 +203,7 @@ module RebellionG54; class Game
   # Game state changers
   #----------------------------------------------
 
-  def start_game(users, strict_roles: true, shuffle_players: true, rigged_players: nil)
+  def start(users, strict_roles: true, shuffle_players: true, rigged_players: nil)
     raise "Game #{@channel_name} already started" if @started
 
     return [false, "Need #{ROLES_PER_GAME} roles instead of #{@roles.size}"] if @roles.size != ROLES_PER_GAME
@@ -268,6 +268,7 @@ module RebellionG54; class Game
 
     [true, '']
   end
+  alias :start_game :start
 
   def take_choice(user, choice, *args)
     player = find_player(user)
