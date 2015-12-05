@@ -8,7 +8,7 @@ RSpec.describe RebellionG54::Game do
     let(:user) { subject.choice_names.keys.first }
 
     it 'cannot be started again' do
-      expect { subject.start_game }.to raise_exception(StandardError)
+      expect { subject.start_game(%w(p1 p2)) }.to raise_exception(StandardError)
     end
 
     it 'has players' do
@@ -150,7 +150,7 @@ RSpec.describe RebellionG54::Game do
     end
 
     it 'does not start the game' do
-      success, error = subject.start_game
+      success, error = subject.start_game(%w(p1 p2))
       expect(success).to be == false
       expect(error).to include('5')
     end
@@ -163,45 +163,29 @@ RSpec.describe RebellionG54::Game do
     end
 
     it 'does not start the game' do
-      success, error = subject.start_game
+      success, error = subject.start_game(%w(p1 p2))
       expect(success).to be == false
       expect(error).to include('invalid')
-    end
-  end
-
-  context 'removing a player' do
-    subject { RebellionG54::Game.new('testgame') }
-    before(:each) do
-      subject.add_player('p1')
-      subject.remove_player('p1')
-    end
-
-    it 'does not consider p1 to be in the game' do
-      expect(subject.has_player?('p1')).to be == false
-    end
-
-    it 'has no players' do
-      expect(subject.size).to be == 0
     end
   end
 
   context 'replacing a player' do
     subject { RebellionG54::Game.new('testgame') }
     before(:each) do
-      subject.add_player('p1')
+      subject.start_game(['p1', 'p3'])
       subject.replace_player('p1', 'p2')
     end
 
     it 'does not consider p1 to be in the game' do
-      expect(subject.has_player?('p1')).to be == false
+      expect(subject.users).to_not include('p1')
     end
 
     it 'considers p1 to be in the game' do
-      expect(subject.has_player?('p2')).to be == true
+      expect(subject.users).to include('p2')
     end
 
-    it 'has one player' do
-      expect(subject.size).to be == 1
+    it 'does not change player count' do
+      expect(subject.size).to be == 2
     end
   end
 end

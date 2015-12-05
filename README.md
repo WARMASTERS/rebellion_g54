@@ -6,7 +6,7 @@ https://boardgamegeek.com/boardgame/148943/coup-rebellion-g54
 
 # Basic Usage
 
-Create an instance of `RebellionG54::Game`, use `Game#add_player(User)` to add some players (`User` can be any type that is convenient, such as a string or any other form of user identifier), `Game#roles=`, to change the roles, then `Game#start_game` to start it.
+Create an instance of `RebellionG54::Game`, use `Game#roles=`, to change the roles, then call `Game#start_game([User])` to start it with some players (`User` can be any type that is convenient, such as a string or any other form of user identifier).
 
 Any time a decision is required of a player, the game presents a `Game#decision_description -> String` and `Game#choice_names -> Hash[User => String]` naming the choices each player can take.
 Calling `Game#choice_explanations(User) -> Hash[String => Hash]` gives an explanation of each choice for that `User`, where each string is a choice name.

@@ -101,26 +101,6 @@ module RebellionG54; class Game
     @players.map(&:user)
   end
 
-  def has_player?(user)
-    @players.any? { |p| p.user == user }
-  end
-
-  def add_player(user)
-    raise "Cannot add #{user} to #{@channel_name}: game in progress" if @started
-    return false if has_player?(user)
-    new_player = Player.new(user, @main_token, @action_token)
-    @players << new_player
-    true
-  end
-
-  def remove_player(user)
-    raise "Cannot remove #{user} from #{@channel_name}: game in progress" if @started
-    player = find_player(user)
-    return false unless player
-    @players.delete(player)
-    true
-  end
-
   def replace_player(replaced, replacing)
     player = find_player(replaced)
     return false unless player
@@ -223,7 +203,7 @@ module RebellionG54; class Game
   # Game state changers
   #----------------------------------------------
 
-  def start_game(strict_roles: true, shuffle_players: true, rigged_players: nil)
+  def start_game(users, strict_roles: true, shuffle_players: true, rigged_players: nil)
     raise "Game #{@channel_name} already started" if @started
 
     return [false, "Need #{ROLES_PER_GAME} roles instead of #{@roles.size}"] if @roles.size != ROLES_PER_GAME
@@ -236,6 +216,7 @@ module RebellionG54; class Game
     @start_time = Time.now
     @roles.freeze
 
+    @players = users.map { |u| Player.new(u, @main_token, @action_token) }
     @players.shuffle! if shuffle_players
 
     @deck = []

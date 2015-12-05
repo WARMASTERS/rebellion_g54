@@ -27,7 +27,7 @@ def example_game(num_players, freedom_of_press: false, synchronous_challenges: f
     game.roles.concat(new_roles.take(RebellionG54::Game::ROLES_PER_GAME - game.roles.size))
   end
 
-  num_players.times { |i| game.add_player("p#{i + 1}") }
+  players = (1..num_players).map { |i| "p#{i}" }
 
   rig_opts = {}
   if rigged_roles
@@ -40,9 +40,9 @@ def example_game(num_players, freedom_of_press: false, synchronous_challenges: f
   game.freedom_of_press_enabled = freedom_of_press
 
   if rig_opts.empty?
-    game.start_game(strict_roles: false)
+    game.start_game(players, strict_roles: false)
   else
-    game.start_game(strict_roles: false, rigged_players: [rig_opts] * num_players)
+    game.start_game(players, strict_roles: false, rigged_players: [rig_opts] * num_players)
   end
 
   game
