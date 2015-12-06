@@ -17,13 +17,11 @@ module RebellionG54; class Game
   STARTING_INFLUENCE = 2
   STARTING_COINS = 2
 
-  attr_reader :id, :channel_name, :started, :roles
+  attr_reader :id, :channel_name, :roles
   attr_reader :start_time
   attr_reader :freedom_of_press_enabled
   attr_accessor :synchronous_challenges
   attr_accessor :output_streams
-
-  alias :started? :started
 
   class << self
     attr_accessor :games_created
@@ -33,22 +31,35 @@ module RebellionG54; class Game
 
   class Token; end
 
-  def initialize(channel_name)
+  def initialize(
+    channel_name, users, roles,
+    freedom_of_press_enabled: true,
+    synchronous_challenges: true,
+    # for tests
+    strict_roles: true, shuffle_players: true, rigged_players: nil
+  )
+    raise "Need #{ROLES_PER_GAME} roles instead of #{roles.size}" if roles.size != ROLES_PER_GAME
+    if strict_roles
+      invalid_roles = roles.reject { |r| Role::ALL.has_key?(r) }
+      raise "Roles #{invalid_roles} are invalid" unless invalid_roles.empty?
+    end
+
     self.class.games_created += 1
     @id = self.class.games_created
 
     @channel_name = channel_name
-    @players = []
-    # dead players are no longer in @players, preventing them from taking actions
-    @dead_players = []
-    @started = false
-    @start_time = nil
-    # roles is frozen once game begins
-    @roles = [:director, :banker, :guerrilla, :politician, :peacekeeper]
 
-    @freedom_of_press_enabled = true
-    @synchronous_challenges = true
+    @start_time = Time.now
 
+    @roles = roles.freeze
+
+    # Settings: Freedom of press can't change mid-game
+    @freedom_of_press_enabled = freedom_of_press_enabled
+
+    # Settings: Synchronous challenges can change mid-game
+    @synchronous_challenges = synchronous_challenges
+
+    # Various tokens:
     @taxed_role = nil
     @taxing_player = nil
 
@@ -60,13 +71,7 @@ module RebellionG54; class Game
     # Hash[Player => Action] (what action placed that token on you?)
     @disappear_players = {}
 
-    # Hash[Action => Hash[Player(dead_player) => Array[Player(claimant)]]]
-    @death_claims = {}
     @deaths_this_turn = []
-
-    # Set on game start (actions is frozen, deck changes)
-    @actions = []
-    @deck = []
 
     @turns = []
 
@@ -83,6 +88,61 @@ module RebellionG54; class Game
 
     @main_token = Token.new
     @action_token = Token.new
+
+    @players = users.map { |u| Player.new(u, @main_token, @action_token) }
+    @players.shuffle! if shuffle_players
+
+    # dead players are no longer in @players, preventing them from taking actions
+    @dead_players = []
+
+    @deck = []
+    @actions = []
+    @actions << Action::Income
+    @actions << Action::FreedomOfPress if @freedom_of_press_enabled
+    @actions << Action::Coup
+    card_id = 1
+    @roles.each { |role|
+      action = Action.const_get(Role::to_class_name(role))
+      action = action.per_game_state.new if action.per_game_state
+      @actions << action
+      3.times.each {
+        @deck << Card.new(card_id, role)
+        card_id += 1
+      }
+    }
+    @actions.freeze
+
+    # Hash[Action => Hash[Player(dead_player) => Array[Player(claimant)]]]
+    @death_claims = @actions.select { |a| a.timing == :on_death }.map { |a| [a, {}] }.to_h
+
+    @deck.shuffle!
+
+    if rigged_players
+      @players.zip(rigged_players).each { |player, rigged|
+        cards_to_give = []
+        (rigged[:roles] || []).each { |role|
+          card = @deck.find { |d| d.role == role }
+          if card
+            @deck.delete(card)
+            cards_to_give << card
+          end
+        }
+        cards_to_give << @deck.shift until cards_to_give.size >= STARTING_INFLUENCE
+        player.receive_cards(@main_token, cards_to_give)
+        player.give_coins(@action_token, rigged[:coins] || STARTING_COINS)
+      }
+    else
+      @players.each { |player|
+        player.receive_cards(@main_token, @deck.shift(STARTING_INFLUENCE))
+        player.give_coins(@action_token, STARTING_COINS)
+      }
+    end
+
+    @players.each { |player|
+      raise "#{player} didn't get #{STARTING_INFLUENCE} cards" unless player.influence == STARTING_INFLUENCE
+    }
+
+    next_turn
   end
 
   def output(message)
@@ -186,89 +246,8 @@ module RebellionG54; class Game
   end
 
   #----------------------------------------------
-  # Setters
-  #----------------------------------------------
-
-  def freedom_of_press_enabled=(enabled)
-    raise "Cannot change Freedom of Press in game #{@channel_name}: game in progress" if @started
-    @freedom_of_press_enabled = enabled
-  end
-
-  def roles=(new_roles)
-    raise "Cannot change roles of game #{@channel_name}: game in progress" if @started
-    @roles = new_roles
-  end
-
-  #----------------------------------------------
   # Game state changers
   #----------------------------------------------
-
-  def start(users, strict_roles: true, shuffle_players: true, rigged_players: nil)
-    raise "Game #{@channel_name} already started" if @started
-
-    return [false, "Need #{ROLES_PER_GAME} roles instead of #{@roles.size}"] if @roles.size != ROLES_PER_GAME
-    if strict_roles
-      invalid_roles = @roles.reject { |r| Role::ALL.has_key?(r) }
-      return [false, "Roles #{invalid_roles} are invalid"] unless invalid_roles.empty?
-    end
-
-    @started = true
-    @start_time = Time.now
-    @roles.freeze
-
-    @players = users.map { |u| Player.new(u, @main_token, @action_token) }
-    @players.shuffle! if shuffle_players
-
-    @deck = []
-    card_id = 1
-    @actions << Action::Income
-    @actions << Action::FreedomOfPress if @freedom_of_press_enabled
-    @actions << Action::Coup
-    @roles.each do |role|
-      action = Action.const_get(Role::to_class_name(role))
-      action = action.per_game_state.new if action.per_game_state
-      @actions << action
-      3.times.each do
-        @deck << Card.new(card_id, role)
-        card_id += 1
-      end
-    end
-    @actions.freeze
-
-    @death_claims = @actions.select { |a| a.timing == :on_death }.map { |a| [a, {}] }.to_h
-
-    @deck.shuffle!
-
-    if rigged_players
-      @players.zip(rigged_players).each { |player, rigged|
-        cards_to_give = []
-        (rigged[:roles] || []).each { |role|
-          card = @deck.find { |d| d.role == role }
-          if card
-            @deck.delete(card)
-            cards_to_give << card
-          end
-        }
-        cards_to_give << @deck.shift until cards_to_give.size >= STARTING_INFLUENCE
-        player.receive_cards(@main_token, cards_to_give)
-        player.give_coins(@action_token, rigged[:coins] || STARTING_COINS)
-      }
-    else
-      @players.each do |player|
-        player.receive_cards(@main_token, @deck.shift(STARTING_INFLUENCE))
-        player.give_coins(@action_token, STARTING_COINS)
-      end
-    end
-
-    @players.each { |player|
-      raise "#{player} didn't get #{STARTING_INFLUENCE} cards" unless player.influence == STARTING_INFLUENCE
-    }
-
-    next_turn
-
-    [true, '']
-  end
-  alias :start_game :start
 
   def take_choice(user, choice, *args)
     player = find_player(user)

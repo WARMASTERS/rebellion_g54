@@ -12,19 +12,15 @@ RSpec.configure { |c|
 # If rigged_roles given, give each player (up to 3) those roles
 # If coins given, give everyone that many coins.
 def example_game(num_players, freedom_of_press: false, synchronous_challenges: false, roles: nil, rigged_roles: nil, coins: nil)
-  game = RebellionG54::Game.new('testgame')
-
-  if roles
-    roles = [roles] unless roles.is_a?(Array)
-    game.roles = roles.dup
-  end
+  roles = [roles] if roles && !roles.is_a?(Array)
+  roles = roles ? roles.dup : []
 
   # Always have a set of 5 cards even in tests.
   # Tests can go weird if some players start with < 2 cards.
-  if game.roles.size < RebellionG54::Game::ROLES_PER_GAME
+  if roles.size < RebellionG54::Game::ROLES_PER_GAME
     default_roles = [:banker, :director, :guerrilla, :politician, :peacekeeper]
-    new_roles = default_roles - game.roles
-    game.roles.concat(new_roles.take(RebellionG54::Game::ROLES_PER_GAME - game.roles.size))
+    new_roles = default_roles - roles
+    roles.concat(new_roles.take(RebellionG54::Game::ROLES_PER_GAME - roles.size))
   end
 
   players = (1..num_players).map { |i| "p#{i}" }
@@ -36,16 +32,14 @@ def example_game(num_players, freedom_of_press: false, synchronous_challenges: f
   end
   rig_opts[:coins] = coins if coins
 
-  game.synchronous_challenges = synchronous_challenges
-  game.freedom_of_press_enabled = freedom_of_press
+  opts = {
+    strict_roles: false,
+    synchronous_challenges: synchronous_challenges,
+    freedom_of_press_enabled: freedom_of_press,
+  }
+  opts[:rigged_players] = [rig_opts] * num_players unless rig_opts.empty?
 
-  if rig_opts.empty?
-    game.start_game(players, strict_roles: false)
-  else
-    game.start_game(players, strict_roles: false, rigged_players: [rig_opts] * num_players)
-  end
-
-  game
+  RebellionG54::Game.new('testgame', players, roles, **opts)
 end
 
 class CollectingStream

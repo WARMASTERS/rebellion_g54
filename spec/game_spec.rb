@@ -144,37 +144,24 @@ RSpec.describe RebellionG54::Game do
   end
 
   context 'wrong number of roles' do
-    subject { RebellionG54::Game.new('testgame') }
-    before(:each) do
-      subject.roles = [:banker, :director, :guerilla, :politician]
-    end
-
     it 'does not start the game' do
-      success, error = subject.start_game(%w(p1 p2))
-      expect(success).to be == false
-      expect(error).to include('5')
+      expect { RebellionG54::Game.new(
+        'testgame', %w(p1 p2), %i(banker director guerrilla politician),
+      )}.to raise_error(StandardError, /5 roles instead of 4/)
     end
   end
 
   context 'invalid role' do
-    subject { RebellionG54::Game.new('testgame') }
-    before(:each) do
-      subject.roles = [:banker, :director, :guerilla, :politician, :cheese_grater]
-    end
-
     it 'does not start the game' do
-      success, error = subject.start_game(%w(p1 p2))
-      expect(success).to be == false
-      expect(error).to include('invalid')
+      expect { RebellionG54::Game.new(
+        'testgame', %w(p1 p2), %i(banker director guerrilla politician cheese_grater),
+      )}.to raise_error(StandardError, /cheese_grater.*invalid/)
     end
   end
 
   context 'replacing a player' do
-    subject { RebellionG54::Game.new('testgame') }
-    before(:each) do
-      subject.start_game(['p1', 'p3'])
-      subject.replace_player('p1', 'p2')
-    end
+    subject { example_game(2) }
+    before(:each) { subject.replace_player('p1', 'p2') }
 
     it 'does not consider p1 to be in the game' do
       expect(subject.users).to_not include('p1')

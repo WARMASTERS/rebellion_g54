@@ -6,7 +6,9 @@ https://boardgamegeek.com/boardgame/148943/coup-rebellion-g54
 
 # Basic Usage
 
-Create an instance of `RebellionG54::Game`, use `Game#roles=`, to change the roles, then call `Game#start_game([User])` to start it with some players (`User` can be any type that is convenient, such as a string or any other form of user identifier).
+Call `RebellionG54::Game.new(channel_name: String, users: [User], roles: [Symbol])` to create a game.
+`User` can be any type that is convenient, such as a string or any other form of user identifier.
+Valid role symbols are listed in `lib/rebellion_g54/role.rb`.
 
 Any time a decision is required of a player, the game presents a `Game#decision_description -> String` and `Game#choice_names -> Hash[User => String]` naming the choices each player can take.
 Calling `Game#choice_explanations(User) -> Hash[String => Hash]` gives an explanation of each choice for that `User`, where each string is a choice name.
