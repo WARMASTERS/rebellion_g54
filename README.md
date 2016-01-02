@@ -4,6 +4,8 @@ This is a Ruby implementation of game logic for "Coup: Guatemala 1954" or "Coup:
 
 https://boardgamegeek.com/boardgame/148943/coup-rebellion-g54
 
+[![Build Status](https://travis-ci.org/petertseng/rebellion_g54.svg?branch=master)](https://travis-ci.org/petertseng/rebellion_g54)
+
 # Basic Usage
 
 Call `RebellionG54::Game.new(channel_name: String, users: [User], roles: [Symbol])` to create a game.
