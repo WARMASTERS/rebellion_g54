@@ -10,4 +10,7 @@ Gem::Specification.new do |s|
   s.files         = Dir['LICENSE', 'README.md', 'lib/**/*']
   s.test_files    = Dir['spec/**/*']
   s.require_paths = ['lib']
+
+  s.add_development_dependency 'rspec'
+  s.add_development_dependency 'simplecov'
 end
